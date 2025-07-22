@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://localhost:7000/api'; // Update with your C# API URL
+const API_BASE_URL = 'https://localhost:7132/api'; // Update with your C# API URL
 
 class ApiService {
     constructor() {
@@ -29,9 +29,9 @@ class ApiService {
 
     // Game API methods
     async createGame(playerName) {
-        return this.request('/game/create', {
+        return this.request('/Lobby/create', {
             method: 'POST',
-            body: JSON.stringify({ playerName }),
+            body: JSON.stringify({ Name: playerName }),
         });
     }
 
