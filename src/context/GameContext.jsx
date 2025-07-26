@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import apiService from '../services/api';
-import websocketService from '../services/websocket';
+import websocketService from '../services/webSocket';
 
 const GameContext = createContext();
 
 const initialState = {
-  gameId: null,
+  lobbyId: null,
   playerName: '',
   gameState: null,
   loading: false,
@@ -17,6 +17,8 @@ const initialState = {
   currentPlayer: null,
   gamePhase: 'waiting',
   connectionStatus: 'disconnected',
+  availableLobbies: [],
+  lobbyInfo: null,
 };
 
 function gameReducer(state, action) {
@@ -25,6 +27,12 @@ function gameReducer(state, action) {
       return { ...state, loading: action.payload };
     case 'SET_ERROR':
       return { ...state, error: action.payload, loading: false };
+    case 'SET_LOBBY_ID':
+      return { ...state, lobbyId: action.payload };
+    case 'SET_LOBBY_INFO':
+      return { ...state, lobbyInfo: action.payload };
+    case 'SET_AVAILABLE_LOBBIES':
+      return { ...state, availableLobbies: action.payload };
     case 'SET_GAME_STATE':
       return {
         ...state,
@@ -40,8 +48,6 @@ function gameReducer(state, action) {
       };
     case 'SET_PLAYER_NAME':
       return { ...state, playerName: action.payload };
-    case 'SET_GAME_ID':
-      return { ...state, gameId: action.payload };
     case 'UPDATE_HAND':
       return { ...state, currentHand: action.payload };
     case 'UPDATE_TRICK':
@@ -57,6 +63,18 @@ function gameReducer(state, action) {
       return {
         ...state,
         players: state.players.filter(p => p.name !== action.payload.playerName)
+      };
+    case 'CLEAR_LOBBY':
+      return {
+        ...state,
+        lobbyId: null,
+        gameState: null,
+        players: [],
+        currentHand: [],
+        currentTrick: [],
+        scores: {},
+        gamePhase: 'waiting',
+        lobbyInfo: null
       };
     case 'RESET_GAME':
       websocketService.disconnect();
@@ -114,31 +132,58 @@ export function GameProvider({ children }) {
     };
   }, []);
 
-  // Connect to WebSocket when player joins
+  // Connect to WebSocket when player joins a lobby
   useEffect(() => {
-    if (state.playerName) {
-      websocketService.connect(state.playerName);
+    if (state.playerName && state.lobbyId) {
+      websocketService.connect(state.playerName, state.lobbyId);
     }
-  }, [state.playerName]);
+  }, [state.playerName, state.lobbyId]);
 
-  const createGame = async (playerName) => {
+  const createLobby = async (playerName, lobbyName = null) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await apiService.createGame(playerName);
-      dispatch({ type: 'SET_GAME_ID', payload: response.gameId });
+      const response = await apiService.createLobby(playerName, lobbyName);
+
+      dispatch({ type: 'SET_LOBBY_ID', payload: response.lobbyId });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
       dispatch({ type: 'SET_LOADING', payload: false });
+
+      return response;
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
   };
 
-  const joinGame = async (playerName) => {
+  const joinLobby = async (playerName, lobbyId) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await apiService.joinGame(playerName);
+      const response = await apiService.joinLobby(playerName, lobbyId);
+
+      dispatch({ type: 'SET_LOBBY_ID', payload: lobbyId });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
       dispatch({ type: 'SET_LOADING', payload: false });
+
+      return response;
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: error.message });
+    }
+  };
+
+  const getAvailableLobbies = async () => {
+    try {
+      const lobbies = await apiService.getAvailableLobbies();
+      dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: lobbies });
+      return lobbies;
+    } catch (error) {
+      dispatch({ type: 'SET_ERROR', payload: error.message });
+    }
+  };
+
+  const leaveLobby = async () => {
+    try {
+      await apiService.leaveLobby(state.playerName, state.lobbyId);
+      websocketService.disconnect();
+      dispatch({ type: 'CLEAR_LOBBY' });
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
@@ -146,8 +191,7 @@ export function GameProvider({ children }) {
 
   const playCard = async (cardId) => {
     try {
-      await apiService.playCard(state.playerName, cardId);
-      // Update will come from WebSocket
+      await apiService.playCard(state.playerName, cardId, state.lobbyId);
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
@@ -155,8 +199,7 @@ export function GameProvider({ children }) {
 
   const makeBid = async (bid) => {
     try {
-      await apiService.makeBid(state.playerName, bid);
-      // Update will come from WebSocket
+      await apiService.makeBid(state.playerName, bid, state.lobbyId);
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
@@ -165,8 +208,10 @@ export function GameProvider({ children }) {
   return (
     <GameContext.Provider value={{
       ...state,
-      createGame,
-      joinGame,
+      createLobby,
+      joinLobby,
+      getAvailableLobbies,
+      leaveLobby,
       playCard,
       makeBid,
       dispatch,

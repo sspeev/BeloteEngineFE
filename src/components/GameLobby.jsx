@@ -1,76 +1,159 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/gameContext';
 
 function GameLobby() {
   const [playerName, setPlayerName] = useState('');
-  const [showJoinForm, setShowJoinForm] = useState(false);
-  const { createGame, joinGame, loading } = useGame();
+  const [lobbyName, setLobbyName] = useState('');
+  const [selectedLobbyId, setSelectedLobbyId] = useState('');
+  const [view, setView] = useState('main'); // 'main', 'create', 'join'
 
-  const handleCreateGame = async (e) => {
+  const {
+    createLobby,
+    joinLobby,
+    getAvailableLobbies,
+    availableLobbies,
+    loading
+  } = useGame();
+
+  useEffect(() => {
+    if (view === 'join') {
+      getAvailableLobbies();
+    }
+  }, [view, getAvailableLobbies]);
+
+  const handleCreateLobby = async (e) => {
     e.preventDefault();
     if (playerName.trim()) {
-      await createGame(playerName.trim());
+      await createLobby(playerName.trim(), lobbyName.trim() || null);
     }
   };
 
-  const handleJoinGame = async (e) => {
+  const handleJoinLobby = async (e) => {
     e.preventDefault();
-    if (playerName.trim()) {
-      await joinGame(playerName.trim());
+    if (playerName.trim() && selectedLobbyId) {
+      await joinLobby(playerName.trim(), selectedLobbyId);
     }
+  };
+
+  const refreshLobbies = () => {
+    getAvailableLobbies();
   };
 
   return (
     <div className="lobby-container">
       <h1>Welcome to Belote</h1>
 
-      <div className="lobby-forms">
-        {!showJoinForm ? (
-          <div className="create-game-form">
-            <h2>Create New Game</h2>
-            <form onSubmit={handleCreateGame}>
-              <input
-                type="text"
-                placeholder="Enter your name"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                required
-              />
-              <button type="submit" disabled={loading}>
-                Create Game
-              </button>
-            </form>
+      {view === 'main' && (
+        <div className="lobby-main">
+          <div className="lobby-options">
             <button
-              className="switch-button"
-              onClick={() => setShowJoinForm(true)}
+              className="lobby-option-btn"
+              onClick={() => setView('create')}
             >
-              Join Existing Game
+              Create New Lobby
+            </button>
+            <button
+              className="lobby-option-btn"
+              onClick={() => setView('join')}
+            >
+              Join Existing Lobby
             </button>
           </div>
-        ) : (
-          <div className="join-game-form">
-            <h2>Join Game</h2>
-            <form onSubmit={handleJoinGame}>
-              <input
-                type="text"
-                placeholder="Enter your name"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                required
-              />
-              <button type="submit" disabled={loading}>
-                Join Game
-              </button>
-            </form>
-            <button
-              className="switch-button"
-              onClick={() => setShowJoinForm(false)}
-            >
-              Create New Game
+        </div>
+      )}
+
+      {view === 'create' && (
+        <div className="create-lobby-form">
+          <h2>Create New Lobby</h2>
+          <form onSubmit={handleCreateLobby}>
+            <input
+              type="text"
+              placeholder="Enter your name"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Lobby name (optional)"
+              value={lobbyName}
+              onChange={(e) => setLobbyName(e.target.value)}
+            />
+            <button type="submit" disabled={loading}>
+              Create Lobby
             </button>
-          </div>
-        )}
-      </div>
+          </form>
+          <button
+            className="back-button"
+            onClick={() => setView('main')}
+          >
+            Back
+          </button>
+        </div>
+      )}
+
+      {view === 'join' && (
+        <div className="join-lobby-form">
+          <h2>Join Lobby</h2>
+          <form onSubmit={handleJoinLobby}>
+            <input
+              type="text"
+              placeholder="Enter your name"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              required
+            />
+
+            <div className="lobby-selection">
+              <div className="lobby-header">
+                <h3>Available Lobbies</h3>
+                <button
+                  type="button"
+                  onClick={refreshLobbies}
+                  className="refresh-btn"
+                >
+                  Refresh
+                </button>
+              </div>
+
+              <div className="lobbies-list">
+                {availableLobbies?.map(lobby => (
+                  <div
+                    key={lobby.id}
+                    className={`lobby-item ${selectedLobbyId === lobby.id ? 'selected' : ''}`}
+                    onClick={() => setSelectedLobbyId(lobby.id)}
+                  >
+                    <div className="lobby-info">
+                      <h4>{lobby.name || `Lobby ${lobby.id}`}</h4>
+                      <p>Players: {lobby.playerCount}/4</p>
+                      <p>Status: {lobby.status}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {availableLobbies?.length === 0 && (
+                  <div className="no-lobbies">
+                    No available lobbies. Create one instead!
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || !selectedLobbyId}
+            >
+              Join Selected Lobby
+            </button>
+          </form>
+          <button
+            className="back-button"
+            onClick={() => setView('main')}
+          >
+            Back
+          </button>
+        </div>
+      )}
     </div>
   );
 }

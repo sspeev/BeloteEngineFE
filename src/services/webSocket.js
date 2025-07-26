@@ -5,17 +5,21 @@ class WebSocketService {
     this.maxReconnectAttempts = 5;
     this.reconnectInterval = 3000;
     this.listeners = new Map();
+    this.currentLobbyId = null;
+    this.currentPlayerId = null;
   }
 
-  connect(playerId) {
-    // Remove gameId since you're using singleton lobby
-    const wsUrl = `ws://localhost:7132/ws/lobby?playerId=${playerId}`;
-    
+  connect(playerId, lobbyId) {
+    const wsUrl = `ws://localhost:7132/ws/lobby/${lobbyId}?playerId=${playerId}`;
+
+    this.currentPlayerId = playerId;
+    this.currentLobbyId = lobbyId;
+
     try {
       this.ws = new WebSocket(wsUrl);
-      
+
       this.ws.onopen = () => {
-        console.log('WebSocket connected');
+        console.log(`WebSocket connected to lobby ${lobbyId}`);
         this.reconnectAttempts = 0;
         this.emit('connected');
       };
@@ -32,7 +36,7 @@ class WebSocketService {
       this.ws.onclose = (event) => {
         console.log('WebSocket disconnected:', event.code, event.reason);
         this.emit('disconnected');
-        this.attemptReconnect(playerId);
+        this.attemptReconnect();
       };
 
       this.ws.onerror = (error) => {
@@ -48,7 +52,7 @@ class WebSocketService {
 
   handleMessage(data) {
     const { type, payload } = data;
-    
+
     switch (type) {
       case 'gameStateUpdate':
         this.emit('gameStateUpdate', payload);
@@ -82,13 +86,13 @@ class WebSocketService {
     }
   }
 
-  attemptReconnect(playerId) {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+  attemptReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts && this.currentPlayerId && this.currentLobbyId) {
       this.reconnectAttempts++;
       console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-      
+
       setTimeout(() => {
-        this.connect(playerId);
+        this.connect(this.currentPlayerId, this.currentLobbyId);
       }, this.reconnectInterval);
     } else {
       console.error('Max reconnection attempts reached');
@@ -140,12 +144,14 @@ class WebSocketService {
       this.ws.close();
       this.ws = null;
     }
+    this.currentPlayerId = null;
+    this.currentLobbyId = null;
     this.listeners.clear();
   }
 
   getConnectionState() {
     if (!this.ws) return 'disconnected';
-    
+
     switch (this.ws.readyState) {
       case WebSocket.CONNECTING:
         return 'connecting';

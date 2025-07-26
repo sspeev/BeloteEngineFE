@@ -18,7 +18,7 @@ class ApiService {
         try {
             const response = await fetch(url, config);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}. Error: ${response.body}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             // Check if response has content before parsing JSON
@@ -43,59 +43,63 @@ class ApiService {
         }
     }
 
-    // Game API methods with proper HTTP methods
-    async createGame(playerName) {
+    // Multiple lobby methods
+    async createLobby(playerName, lobbyId = null) {
         return this.request('/Lobby/create', {
             method: 'POST',
-            body: JSON.stringify({ Name: playerName }),
+            body: JSON.stringify({
+                playerName,
+                lobbyId
+            }),
         });
     }
 
-    async joinGame(playerName) {
+    async joinLobby(playerName, lobbyId) {
         return this.request('/Lobby/join', {
-            method: 'POST',  // POST for actions/operations
-            body: JSON.stringify({ Name: playerName }),
+            method: 'POST',
+            body: JSON.stringify({
+                playerName,
+                lobbyId
+            }),
         });
     }
 
-    async getGameState() {
-        return this.request('/Lobby/state', {
-            method: 'GET'    // GET for retrieving data
+    async getAvailableLobbies() {
+        return this.request('/Lobby/list', {
+            method: 'GET'
         });
     }
 
-    async playCard(playerName, cardId) {
-        return this.request('/Lobby/play', {
-            method: 'POST',  // POST for game actions
+    async getLobbyState(lobbyId) {
+        return this.request(`/Lobby/${lobbyId}/state`, {
+            method: 'GET'
+        });
+    }
+
+    async playCard(playerName, cardId, lobbyId) {
+        return this.request(`/Lobby/${lobbyId}/play`, {
+            method: 'POST',
             body: JSON.stringify({ playerName, cardId }),
         });
     }
 
-    async makeBid(playerName, bid) {
-        return this.request('/Lobby/bid', {
-            method: 'POST',  // POST for game actions
+    async makeBid(playerName, bid, lobbyId) {
+        return this.request(`/Lobby/${lobbyId}/bid`, {
+            method: 'POST',
             body: JSON.stringify({ playerName, bid }),
         });
     }
 
-    async leaveLobby(playerName) {
-        return this.request('/Lobby/leave', {
-            method: 'POST',  // POST for actions
+    async leaveLobby(playerName, lobbyId) {
+        return this.request(`/Lobby/${lobbyId}/leave`, {
+            method: 'POST',
             body: JSON.stringify({ playerName }),
         });
     }
 
-    // Additional REST endpoints you might need
-    async updatePlayerStatus(playerName, status) {
-        return this.request(`/Lobby/players/${playerName}`, {
-            method: 'PUT',   // PUT for updates
-            body: JSON.stringify({ status }),
-        });
-    }
-
-    async deletePlayer(playerName) {
-        return this.request(`/Lobby/players/${playerName}`, {
-            method: 'DELETE' // DELETE for removing resources
+    async getLobbyInfo(lobbyId) {
+        return this.request(`/Lobby/${lobbyId}/info`, {
+            method: 'GET'
         });
     }
 }
