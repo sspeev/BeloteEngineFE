@@ -3,7 +3,6 @@ import { useGame } from '../context/gameContext';
 
 function GameLobby() {
   const [playerName, setPlayerName] = useState('');
-  const [gameIdToJoin, setGameIdToJoin] = useState('');
   const [showJoinForm, setShowJoinForm] = useState(false);
   const { createGame, joinGame, loading } = useGame();
 
@@ -16,15 +15,15 @@ function GameLobby() {
 
   const handleJoinGame = async (e) => {
     e.preventDefault();
-    if (playerName.trim() && gameIdToJoin.trim()) {
-      await joinGame(gameIdToJoin.trim(), playerName.trim());
+    if (playerName.trim()) {
+      await joinGame(playerName.trim());
     }
   };
 
   return (
     <div className="lobby-container">
       <h1>Welcome to Belote</h1>
-      
+
       <div className="lobby-forms">
         {!showJoinForm ? (
           <div className="create-game-form">
@@ -41,7 +40,7 @@ function GameLobby() {
                 Create Game
               </button>
             </form>
-            <button 
+            <button
               className="switch-button"
               onClick={() => setShowJoinForm(true)}
             >
@@ -59,18 +58,11 @@ function GameLobby() {
                 onChange={(e) => setPlayerName(e.target.value)}
                 required
               />
-              <input
-                type="text"
-                placeholder="Enter Game ID"
-                value={gameIdToJoin}
-                onChange={(e) => setGameIdToJoin(e.target.value)}
-                required
-              />
               <button type="submit" disabled={loading}>
                 Join Game
               </button>
             </form>
-            <button 
+            <button
               className="switch-button"
               onClick={() => setShowJoinForm(false)}
             >

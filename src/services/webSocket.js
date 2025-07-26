@@ -7,8 +7,9 @@ class WebSocketService {
     this.listeners = new Map();
   }
 
-  connect(gameId, playerId) {
-    const wsUrl = `ws://localhost:7000/ws/game/${gameId}?playerId=${playerId}`;
+  connect(playerId) {
+    // Remove gameId since you're using singleton lobby
+    const wsUrl = `ws://localhost:7132/ws/lobby?playerId=${playerId}`;
     
     try {
       this.ws = new WebSocket(wsUrl);
@@ -31,7 +32,7 @@ class WebSocketService {
       this.ws.onclose = (event) => {
         console.log('WebSocket disconnected:', event.code, event.reason);
         this.emit('disconnected');
-        this.attemptReconnect(gameId, playerId);
+        this.attemptReconnect(playerId);
       };
 
       this.ws.onerror = (error) => {
@@ -81,13 +82,13 @@ class WebSocketService {
     }
   }
 
-  attemptReconnect(gameId, playerId) {
+  attemptReconnect(playerId) {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
       
       setTimeout(() => {
-        this.connect(gameId, playerId);
+        this.connect(playerId);
       }, this.reconnectInterval);
     } else {
       console.error('Max reconnection attempts reached');

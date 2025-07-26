@@ -6,7 +6,6 @@ const GameContext = createContext();
 
 const initialState = {
   gameId: null,
-  playerId: null,
   playerName: '',
   gameState: null,
   loading: false,
@@ -27,20 +26,20 @@ function gameReducer(state, action) {
     case 'SET_ERROR':
       return { ...state, error: action.payload, loading: false };
     case 'SET_GAME_STATE':
-      return { 
-        ...state, 
-        gameState: action.payload, 
+      return {
+        ...state,
+        gameState: action.payload,
         players: action.payload.players || [],
-        currentHand: action.payload.playerHands?.[state.playerId] || [],
+        currentHand: action.payload.playerHands?.[state.playerName] || [],
         currentTrick: action.payload.currentTrick || [],
         scores: action.payload.scores || {},
         currentPlayer: action.payload.currentPlayer,
         gamePhase: action.payload.phase || 'waiting',
-        loading: false, 
-        error: null 
+        loading: false,
+        error: null
       };
-    case 'SET_PLAYER_INFO':
-      return { ...state, playerId: action.payload.playerId, playerName: action.payload.playerName };
+    case 'SET_PLAYER_NAME':
+      return { ...state, playerName: action.payload };
     case 'SET_GAME_ID':
       return { ...state, gameId: action.payload };
     case 'UPDATE_HAND':
@@ -50,14 +49,14 @@ function gameReducer(state, action) {
     case 'SET_CONNECTION_STATUS':
       return { ...state, connectionStatus: action.payload };
     case 'PLAYER_JOINED':
-      return { 
-        ...state, 
-        players: [...state.players.filter(p => p.id !== action.payload.id), action.payload]
+      return {
+        ...state,
+        players: [...state.players.filter(p => p.name !== action.payload.name), action.payload]
       };
     case 'PLAYER_LEFT':
-      return { 
-        ...state, 
-        players: state.players.filter(p => p.id !== action.payload.playerId)
+      return {
+        ...state,
+        players: state.players.filter(p => p.name !== action.payload.playerName)
       };
     case 'RESET_GAME':
       websocketService.disconnect();
@@ -115,30 +114,31 @@ export function GameProvider({ children }) {
     };
   }, []);
 
-  // Connect to WebSocket when game starts
+  // Connect to WebSocket when player joins
   useEffect(() => {
-    if (state.gameId && state.playerId) {
-      websocketService.connect(state.gameId, state.playerId);
+    if (state.playerName) {
+      websocketService.connect(state.playerName);
     }
-  }, [state.gameId, state.playerId]);
+  }, [state.playerName]);
 
   const createGame = async (playerName) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.createGame(playerName);
       dispatch({ type: 'SET_GAME_ID', payload: response.gameId });
-      dispatch({ type: 'SET_PLAYER_INFO', payload: { playerId: response.playerId, playerName } });
+      dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
+      dispatch({ type: 'SET_LOADING', payload: false });
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
   };
 
-  const joinGame = async (gameId, playerName) => {
+  const joinGame = async (playerName) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response = await apiService.joinGame(gameId, playerName);
-      dispatch({ type: 'SET_GAME_ID', payload: gameId });
-      dispatch({ type: 'SET_PLAYER_INFO', payload: { playerId: response.playerId, playerName } });
+      const response = await apiService.joinGame(playerName);
+      dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
+      dispatch({ type: 'SET_LOADING', payload: false });
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
@@ -146,7 +146,7 @@ export function GameProvider({ children }) {
 
   const playCard = async (cardId) => {
     try {
-      await apiService.playCard(state.gameId, state.playerId, cardId);
+      await apiService.playCard(state.playerName, cardId);
       // Update will come from WebSocket
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
@@ -155,7 +155,7 @@ export function GameProvider({ children }) {
 
   const makeBid = async (bid) => {
     try {
-      await apiService.makeBid(state.gameId, state.playerId, bid);
+      await apiService.makeBid(state.playerName, bid);
       // Update will come from WebSocket
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
