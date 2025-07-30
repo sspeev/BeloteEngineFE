@@ -7,53 +7,96 @@ class WebSocketService {
     this.listeners = new Map();
     this.currentLobbyId = null;
     this.currentPlayerId = null;
+    this.isConnecting = false;
+    this.connectionTimeout = null;
   }
 
   connect(playerId, lobbyId) {
-    const wsUrl = `ws://localhost:7132/ws/lobby/${lobbyId}?playerId=${playerId}`;
+    if (this.isConnecting || (this.ws && this.ws.readyState === WebSocket.OPEN)) {
+      console.log('WebSocket is already connected or connecting.');
+      return;
+    }
 
+    this.isConnecting = true;
     this.currentPlayerId = playerId;
     this.currentLobbyId = lobbyId;
 
+    // FIX: Hardcode 'wss:' because the backend API is served over HTTPS.
+    // A ws:// connection to a wss:// server will fail the handshake.
+    const protocol = 'wss:';
+    const wsUrl = `${protocol}//localhost:7132/ws/lobby/${lobbyId}?playerId=${encodeURIComponent(playerId)}`;
+
     try {
+      console.log(`Attempting to connect to: ${wsUrl}`);
       this.ws = new WebSocket(wsUrl);
 
+      // Add a timeout for the connection attempt
+      this.connectionTimeout = setTimeout(() => {
+        if (this.isConnecting) {
+          console.error('WebSocket connection attempt timed out.');
+          this.ws.close(); // This will trigger the onclose event
+        }
+      }, 10000); // 10-second timeout
+
       this.ws.onopen = () => {
+        clearTimeout(this.connectionTimeout);
+        this.isConnecting = false;
         console.log(`WebSocket connected to lobby ${lobbyId}`);
         this.reconnectAttempts = 0;
         this.emit('connected');
+
+        this.send('connection_established', { playerId, lobbyId });
       };
 
       this.ws.onmessage = (event) => {
         try {
+          console.log('Received WebSocket message:', event.data);
           const data = JSON.parse(event.data);
           this.handleMessage(data);
         } catch (error) {
           console.error('Failed to parse WebSocket message:', error);
+          this.handleMessage({ type: 'text', payload: event.data });
         }
       };
 
       this.ws.onclose = (event) => {
+        clearTimeout(this.connectionTimeout);
+        this.isConnecting = false;
         console.log('WebSocket disconnected:', event.code, event.reason);
-        this.emit('disconnected');
-        this.attemptReconnect();
+        this.emit('disconnected', { code: event.code, reason: event.reason });
+
+        // Only attempt reconnect if it wasn't a normal closure (code 1000)
+        if (event.code !== 1000) {
+          this.attemptReconnect();
+        }
       };
 
       this.ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        this.emit('error', error);
+        console.error('WebSocket error event:', error);
+        // The onerror event is generic. The onclose event provides more details.
+        this.emit('error', new Error('WebSocket connection failed. See browser console for details.'));
       };
 
     } catch (error) {
+      this.isConnecting = false;
       console.error('Failed to create WebSocket connection:', error);
       this.emit('error', error);
     }
   }
 
   handleMessage(data) {
+    if (typeof data === 'string') {
+      // Handle plain text messages (like Echo responses)
+      this.emit('message', data);
+      return;
+    }
+
     const { type, payload } = data;
 
     switch (type) {
+      case 'connection_established':
+        this.emit('connectionEstablished', payload);
+        break;
       case 'gameStateUpdate':
         this.emit('gameStateUpdate', payload);
         break;
@@ -81,8 +124,12 @@ class WebSocketService {
       case 'error':
         this.emit('error', payload);
         break;
+      case 'text':
+        this.emit('message', payload);
+        break;
       default:
         console.warn('Unknown WebSocket message type:', type);
+        this.emit('message', data);
     }
   }
 
@@ -103,9 +150,10 @@ class WebSocketService {
   send(type, payload) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({ type, payload });
+      console.log('Sending WebSocket message:', message);
       this.ws.send(message);
     } else {
-      console.error('WebSocket is not connected');
+      console.error('WebSocket is not connected. State:', this.getConnectionState());
     }
   }
 
@@ -141,9 +189,13 @@ class WebSocketService {
 
   disconnect() {
     if (this.ws) {
-      this.ws.close();
-      this.ws = null;
+      // Prevent reconnection attempts on manual disconnect
+      this.reconnectAttempts = this.maxReconnectAttempts;
+      this.ws.close(1000, 'Client disconnecting');
     }
+    this.ws = null;
+    this.isConnecting = false;
+    clearTimeout(this.connectionTimeout);
     this.currentPlayerId = null;
     this.currentLobbyId = null;
     this.listeners.clear();

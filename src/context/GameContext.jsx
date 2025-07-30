@@ -139,12 +139,12 @@ export function GameProvider({ children }) {
     }
   }, [state.playerName, state.lobbyId]);
 
-  const createLobby = async (playerName, lobbyName = null) => {
+  const createLobby = async (playerName, lobbyName) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const response = await apiService.createLobby(playerName, lobbyName);
 
-      dispatch({ type: 'SET_LOBBY_ID', payload: response.lobbyId });
+      dispatch({ type: 'SET_LOBBY_ID', payload: response.lobbyId || response.id });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
       dispatch({ type: 'SET_LOADING', payload: false });
 

@@ -44,12 +44,12 @@ class ApiService {
     }
 
     // Multiple lobby methods
-    async createLobby(playerName, lobbyId = null) {
+    async createLobby(playerName, lobbyName) {
         return this.request('/Lobby/create', {
             method: 'POST',
             body: JSON.stringify({
                 playerName,
-                lobbyId
+                lobbyName
             }),
         });
     }
