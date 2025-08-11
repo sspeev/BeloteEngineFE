@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../context/gameContext';
 import PlayerHand from './PlayerHand';
 import GameBoard from './GameBoard';
@@ -8,17 +8,25 @@ import ScoreBoard from './ScoreBoard';
 import GameLobby from './GameLobby';
 import './Game.css';
 
-function Game() {
-  const { playerName, gameState, gamePhase, error, loading, connectionStatus } = useGame();
-  const [showScoreboard, setShowScoreboard] = useState(false);
-  const [lobbyCreated, setLobbyCreated] = useState(false);
+const Game = () => {
+  const {
+    playerName,
+    lobbyName,
+    lobbyId,
+    gamePhase,
+    error,
+    loading,
+    connectionStatus,
+    startGame,
+    connectedPlayers   // use backend naming
+  } = useGame();
 
-  // Handle successful lobby creation/join
+  const [showScoreboard, setShowScoreboard] = useState(false);
+  const lobbyCreated = !!playerName && !!lobbyId;
+
   useEffect(() => {
-    if (playerName && !lobbyCreated) {
-      setLobbyCreated(true);
-    }
-  }, [playerName, lobbyCreated]);
+    console.log('Players changed:', connectedPlayers);
+  }, [connectedPlayers]);
 
   if (error) {
     return (
@@ -30,7 +38,7 @@ function Game() {
     );
   }
 
-  if (loading) {
+  if (loading && !lobbyCreated) {
     return (
       <div className="loading-container">
         <div className="spinner"></div>
@@ -39,34 +47,54 @@ function Game() {
     );
   }
 
-  // Show lobby creation interface
   if (!playerName) {
-    return <GameLobby onLobbyCreated={() => setLobbyCreated(true)} />;
+    return <GameLobby />;
   }
 
-  // Show success message briefly when lobby is first created/joined
-  if (lobbyCreated && (!gameState?.players?.length || gamePhase === 'waiting')) {
+  // Waiting / pre-start screen
+  if (lobbyCreated && (connectedPlayers.length !== 4 || gamePhase === 'waiting')) {
+    const playerCount = connectedPlayers.length;
+    const isHost = connectedPlayers[0]?.name === playerName;
+    const canStart = playerCount === 4;
+
     return (
       <div className="lobby-success-container">
         <div className="success-message">
-          <h2>✅ Welcome to the Lobby!</h2>
+          <h2>✅ Welcome to <strong>{lobbyName || `the Lobby`}</strong>!</h2>
           <p>Player: <strong>{playerName}</strong></p>
-          <p>Waiting for more players to join...</p>
+          <p className="player-count">Players: {playerCount}/4</p>
           <div className="loading-dots">
             <span></span>
             <span></span>
             <span></span>
           </div>
+          {isHost && (
+            <div className="start-game-container">
+              <p>
+                {canStart
+                  ? 'All players have joined!'
+                  : `Waiting for ${4 - playerCount} more player(s)...`}
+              </p>
+              <button
+                className="start-game-btn"
+                onClick={startGame}
+                disabled={!canStart}
+                title={canStart ? 'Start the game' : 'Need 4 players to start'}
+              >
+                {canStart ? 'Start Game' : 'Waiting...'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-  // Show main game interface
+  // Main game UI
   return (
     <div className="game-container">
       <div className="game-header">
-        <h1>Belote Game</h1>
+        <h1>Belote Game - {lobbyName}</h1>
         <div className="game-controls">
           <button
             className="toggle-score-btn"
@@ -90,12 +118,10 @@ function Game() {
         <div className="left-panel">
           <PlayerList />
         </div>
-
         <div className="main-game-area">
           <GameBoard />
           {gamePhase === 'bidding' && <BiddingPanel />}
         </div>
-
         <div className="bottom-panel">
           <PlayerHand />
         </div>

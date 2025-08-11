@@ -84,52 +84,30 @@ class WebSocketService {
     }
   }
 
-  handleMessage(data) {
-    if (typeof data === 'string') {
-      // Handle plain text messages (like Echo responses)
-      this.emit('message', data);
-      return;
-    }
+  handleMessage(msg) {
+    // Log raw message
+    console.log('WS message parsed:', msg);
 
-    const { type, payload } = data;
+    // Normalize: backend may send {type, data} or {event, payload}
+    const type = msg.type || msg.event;
+    const payload = msg.payload || msg.data || msg;
 
     switch (type) {
-      case 'connection_established':
-        this.emit('connectionEstablished', payload);
-        break;
+      case 'gameState':
       case 'gameStateUpdate':
         this.emit('gameStateUpdate', payload);
         break;
       case 'playerJoined':
+      case 'PlayerJoined':
         this.emit('playerJoined', payload);
         break;
       case 'playerLeft':
+      case 'PlayerLeft':
         this.emit('playerLeft', payload);
         break;
-      case 'cardPlayed':
-        this.emit('cardPlayed', payload);
-        break;
-      case 'bidMade':
-        this.emit('bidMade', payload);
-        break;
-      case 'trickCompleted':
-        this.emit('trickCompleted', payload);
-        break;
-      case 'roundCompleted':
-        this.emit('roundCompleted', payload);
-        break;
-      case 'gameCompleted':
-        this.emit('gameCompleted', payload);
-        break;
-      case 'error':
-        this.emit('error', payload);
-        break;
-      case 'text':
-        this.emit('message', payload);
-        break;
       default:
-        console.warn('Unknown WebSocket message type:', type);
-        this.emit('message', data);
+        this.emit('unknown', msg);
+        console.debug('Unknown WS message type:', type, msg);
     }
   }
 

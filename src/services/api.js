@@ -65,13 +65,13 @@ class ApiService {
     }
 
     async getAvailableLobbies() {
-        return this.request('/Lobby/list', {
+        return this.request('/Lobby/listLobbies', {
             method: 'GET'
         });
     }
 
     async getLobbyState(lobbyId) {
-        return this.request(`/Lobby/${lobbyId}/state`, {
+        return this.request(`/Lobby/${lobbyId}`, {
             method: 'GET'
         });
     }
@@ -94,6 +94,12 @@ class ApiService {
         return this.request(`/Lobby/${lobbyId}/leave`, {
             method: 'POST',
             body: JSON.stringify({ playerName }),
+        });
+    }
+
+    async startGame(lobbyId) {
+        return this.request(`/Lobby/${lobbyId}/start`, {
+            method: 'POST'
         });
     }
 

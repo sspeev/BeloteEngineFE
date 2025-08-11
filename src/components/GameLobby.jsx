@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/gameContext';
 
-function GameLobby() {
-  const [playerName, setPlayerName] = useState('');
-  const [lobbyName, setLobbyName] = useState('');
-  const [selectedLobbyId, setSelectedLobbyId] = useState('');
-  const [view, setView] = useState('main'); // 'main', 'create', 'join'
-
+const GameLobby = () => {
   const {
     createLobby,
     joinLobby,
@@ -14,6 +9,14 @@ function GameLobby() {
     availableLobbies,
     loading
   } = useGame();
+
+  
+  const [playerName, setPlayerName] = useState('');
+  const [lobbyName, setLobbyName] = useState('');
+  const [selectedLobbyId, setSelectedLobbyId] = useState('');
+  const [view, setView] = useState('main'); // 'main', 'create', 'join'
+
+
 
   useEffect(() => {
     if (view === 'join') {
