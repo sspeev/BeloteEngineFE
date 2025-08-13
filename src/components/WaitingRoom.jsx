@@ -2,25 +2,25 @@ import { useGame } from '../context/gameContext';
 import './WaitingRoom.css';
 
 const WaitingRoom = () => {
-  const { playerCount, players, isGameReady, startGame, currentUserId, connected } = useGame();
-  
-  // Check if current user is the host (first player)
-  const isHost = players.length > 0 && players[0]?.id === currentUserId;
-  
-  if (!connected) {
-    return <div className="connecting-message">Connecting to game server...</div>;
-  }
-  
+  const {
+    connectedPlayers,
+    playersCount,
+    playerName,
+    startGame,
+  } = useGame();
+
+  const isHost = connectedPlayers.length > 0 && connectedPlayers[0]?.name === playerName;
+
   return (
     <div className="waiting-room-container">
       <h2>Game Lobby</h2>
       
       <div className="player-count">
-        <h3>Players: {playerCount} / 4</h3>
+        <h3>Players: {playersCount} / 4</h3>
         <div className="progress-bar">
           <div 
             className="progress" 
-            style={{ width: `${(playerCount / 4) * 100}%` }}
+            style={{ width: `${(playersCount / 4) * 100}%` }}
           ></div>
         </div>
       </div>
@@ -28,15 +28,15 @@ const WaitingRoom = () => {
       <div className="players-list">
         <h3>Current Players:</h3>
         <ul>
-          {players.map((player) => (
-            <li key={player.id} className={player.id === currentUserId ? 'current-player' : ''}>
-              {player.username} {player.id === currentUserId ? '(You)' : ''}
-              {players[0]?.id === player.id ? ' (Host)' : ''}
+          {connectedPlayers.map((player) => (
+            <li key={player.name} className={player.name === playerName ? 'current-player' : ''}>
+              {player.username} {player.name === playerName ? '(You)' : ''}
+              {connectedPlayers[0]?.name === player.name ? ' (Host)' : ''}
             </li>
           ))}
         </ul>
         
-        {playerCount < 4 && (
+        {playersCount < 4 && (
           <div className="waiting-message">
             Waiting for more players to join...
           </div>
@@ -46,14 +46,14 @@ const WaitingRoom = () => {
       {isHost && (
         <button 
           className="start-button" 
-          disabled={!isGameReady} 
+          disabled={playersCount < 4} 
           onClick={startGame}
         >
-          {isGameReady ? 'Start Game' : 'Waiting for Players...'}
+          {playersCount === 4 ? 'Start Game' : 'Waiting for Players...'}
         </button>
       )}
-      
-      {!isHost && isGameReady && (
+
+      {!isHost && playersCount === 4 && (
         <div className="ready-message">
           Game is ready! Waiting for host to start...
         </div>

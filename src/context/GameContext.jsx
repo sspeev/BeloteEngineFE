@@ -48,13 +48,13 @@ function gameReducer(state, action) {
         loading: false
       };
     }
+    case 'SET_CURRENT_PLAYER':
+      return { ...state, currentPlayer: action.payload };
     case 'SET_CONNECTED_PLAYERS':
       return {
         ...state,
-        connectedPlayers: Array.isArray(action.payload)
-          ? [...action.payload]
-          : [],
-        playersCount: action.payload.length
+        connectedPlayers: Array.isArray(action.payload) ? [...action.payload] : [],
+        playersCount: Array.isArray(action.payload) ? action.payload.length : 0
       };
     case 'PLAYER_JOINED': {
       const p = action.payload;
@@ -88,61 +88,68 @@ function gameReducer(state, action) {
   }
 }
 
-export function GameProvider({ children, lobbyId, playerName, token }) {
+export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-    useEffect(() => {
-    dispatch({ type: 'SET_CURRENT_PLAYER', payload: playerName });
-    
-    // Connect to SignalR
-    signalRService.connect(lobbyId, token)
+  // Connect to SignalR when we have lobbyId
+  useEffect(() => {
+    if (!state.lobbyId) return;
+
+    dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' });
+
+    signalRService.connect(state.lobbyId)
       .then(() => {
-        dispatch({ type: 'CONNECTION_STATE', payload: "connected" });
-        return signalRService.invoke('JoinGame', lobbyId);
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
+
+        // Optional: tell server we joined (depends on your hub)
+        signalRService.invoke('JoinGame', state.lobbyId).catch(() => { });
       })
       .catch(error => {
-        console.error('Error connecting to SignalR or joining game:', error);
+        console.error('SignalR connect failed:', error);
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
+        dispatch({ type: 'SET_ERROR', payload: error.message });
       });
-    
-    // Listen for player count updates
-    signalRService.on('playerCountUpdated', (count) => {
-      dispatch({ type: 'UPDATE_PLAYER_COUNT', payload: count });
-    });
-    
-    // Listen for player list updates
-    signalRService.on('playersUpdated', (players) => {
-      dispatch({ type: 'UPDATE_PLAYERS', payload: players });
-    });
-    
-    // Listen for game start
-    signalRService.on('gameStarted', () => {
-      dispatch({ type: 'GAME_STARTED' });
-    });
-    
-    // Cleanup on unmount
-    return () => {
-      signalRService.disconnect();
-    };
-  }, [lobbyId, playerName, token]);
 
-  const fetchInitialState = async lobbyId => {
+    // Handlers from server (ensure these names match your Hub)
+    const onPlayersUpdated = (players) => {
+      dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: players || [] });
+    };
+    const onPlayerJoined = (player) => {
+      dispatch({ type: 'PLAYER_JOINED', payload: player });
+    };
+    const onPlayerLeft = (player) => {
+      dispatch({ type: 'PLAYER_LEFT', payload: player });
+    };
+    const onGameState = (gs) => {
+      dispatch({ type: 'SET_GAME_STATE', payload: gs });
+    };
+    const onGameStarted = () => {
+      dispatch({ type: 'SET_PHASE', payload: 'bidding' });
+    };
+
+    // Register (PascalCase to match common SignalR naming)
+    signalRService.on('PlayersUpdated', onPlayersUpdated);
+    signalRService.on('PlayerJoined', onPlayerJoined);
+    signalRService.on('PlayerLeft', onPlayerLeft);
+    signalRService.on('GameStateUpdated', onGameState);
+    signalRService.on('GameStarted', onGameStarted);
+
+    return () => {
+      signalRService.off('PlayersUpdated', onPlayersUpdated);
+      signalRService.off('PlayerJoined', onPlayerJoined);
+      signalRService.off('PlayerLeft', onPlayerLeft);
+      signalRService.off('GameStateUpdated', onGameState);
+      signalRService.off('GameStarted', onGameStarted);
+      signalRService.disconnect();
+      dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'disconnected' });
+    };
+  }, [state.lobbyId]);
+
+  const fetchInitialState = async (lobbyId) => {
     try {
       const gs = await apiService.getLobbyState(lobbyId);
       if (gs) dispatch({ type: 'SET_GAME_STATE', payload: gs });
-    } catch {
-      /* silent */
-    }
-  };
-
-  const getAvailableLobbies = async () => {
-    try {
-      const list = await apiService.getAvailableLobbies();
-      dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
-      return list;
-    } catch (e) {
-      dispatch({ type: 'SET_ERROR', payload: e.message });
-      return [];
-    }
+    } catch { /* silent */ }
   };
 
   const createLobby = async (playerName, lobbyName) => {
@@ -150,22 +157,15 @@ export function GameProvider({ children, lobbyId, playerName, token }) {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      // Expect backend response: { lobby: { id, name, connectedPlayers: [] } }
       const { lobby } = await apiService.createLobby(playerName, lobbyName);
       if (!lobby) throw new Error('Lobby creation failed');
 
       dispatch({ type: 'SET_LOBBY_ID', payload: lobby.id });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
-      dispatch({
-        type: 'SET_LOBBY_NAME',
-        payload: lobby.name || lobbyName || `Lobby ${lobby.id}`
-      });
-
-      if (lobby.connectedPlayers)
-        dispatch({
-          type: 'SET_CONNECTED_PLAYERS',
-          payload: lobby.connectedPlayers
-        });
+      dispatch({ type: 'SET_LOBBY_NAME', payload: lobby.name || lobbyName || `Lobby ${lobby.id}` });
+      if (lobby.connectedPlayers) {
+        dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: lobby.connectedPlayers });
+      }
 
       await fetchInitialState(lobby.id);
       dispatch({ type: 'SET_LOADING', payload: false });
@@ -181,28 +181,20 @@ export function GameProvider({ children, lobbyId, playerName, token }) {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      if (!state.availableLobbies.length) await getAvailableLobbies();
-      const found = state.availableLobbies.find(
-        l => (l.id || l.lobbyId) === lobbyId
-      );
-      const foundName = found?.name || found?.lobbyName;
+      if (!state.availableLobbies.length) {
+        const list = await apiService.getAvailableLobbies();
+        dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
+      }
 
-      // Expect backend response: { lobby, error? }
       const { lobby, error } = await apiService.joinLobby(playerName, lobbyId);
       if (error) throw new Error(error);
 
       dispatch({ type: 'SET_LOBBY_ID', payload: lobbyId });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
-      dispatch({
-        type: 'SET_LOBBY_NAME',
-        payload: lobby?.name || foundName || `Lobby ${lobbyId}`
-      });
-
-      if (lobby?.connectedPlayers)
-        dispatch({
-          type: 'SET_CONNECTED_PLAYERS',
-          payload: lobby.connectedPlayers
-        });
+      dispatch({ type: 'SET_LOBBY_NAME', payload: lobby?.name || `Lobby ${lobbyId}` });
+      if (lobby?.connectedPlayers) {
+        dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: lobby.connectedPlayers });
+      }
 
       await fetchInitialState(lobbyId);
       dispatch({ type: 'SET_LOADING', payload: false });
@@ -216,28 +208,30 @@ export function GameProvider({ children, lobbyId, playerName, token }) {
   const startGame = async () => {
     if (!state.lobbyId) return;
     try {
-      await apiService.startGame?.(state.lobbyId);
-      // New game state will arrive via WebSocket
+      await apiService.startGame(state.lobbyId);
+      // server should emit GameStarted/GameStateUpdated
     } catch (e) {
       dispatch({ type: 'SET_ERROR', payload: e.message });
     }
   };
 
-  const statingVariables = {
+  const startingVariables = {
     ...state,
     connectedPlayers: state.connectedPlayers,
     playersCount: state.connectedPlayers.length,
     createLobby,
     joinLobby,
     startGame,
-    getAvailableLobbies,
+    getAvailableLobbies: async () => {
+      const list = await apiService.getAvailableLobbies();
+      dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
+      return list;
+    },
     dispatch
   };
 
   return (
-    <GameContext.Provider value={
-      statingVariables
-    }>
+    <GameContext.Provider value={startingVariables}>
       {children}
     </GameContext.Provider>
   );

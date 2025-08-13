@@ -14,6 +14,7 @@ const GameLobby = () => {
   const [playerName, setPlayerName] = useState('');
   const [lobbyName, setLobbyName] = useState('');
   const [selectedLobbyId, setSelectedLobbyId] = useState('');
+  const [playerCount, setPlayerCount] = useState(0);
   const [view, setView] = useState('main'); // 'main', 'create', 'join'
 
 
@@ -35,6 +36,7 @@ const GameLobby = () => {
     e.preventDefault();
     if (playerName.trim() && selectedLobbyId) {
       await joinLobby(playerName.trim(), selectedLobbyId);
+      setPlayerCount(playerCount + 1);
     }
   };
 
