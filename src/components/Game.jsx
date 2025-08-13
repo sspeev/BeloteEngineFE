@@ -6,7 +6,9 @@ import BiddingPanel from './BiddingPanel';
 import PlayerList from './PlayerList';
 import ScoreBoard from './ScoreBoard';
 import GameLobby from './GameLobby';
+import WaitingRoom from './WaitingRoom';
 import './Game.css';
+
 
 const Game = () => {
   const {
@@ -18,11 +20,15 @@ const Game = () => {
     loading,
     connectionStatus,
     startGame,
-    connectedPlayers   // use backend naming
+    connectedPlayers,
+    playersCount
   } = useGame();
 
-  const [showScoreboard, setShowScoreboard] = useState(false);
+  const isHost = connectedPlayers[0]?.name === playerName;
+  const canStart = playersCount === 4;
   const lobbyCreated = !!playerName && !!lobbyId;
+
+  const [showScoreboard, setShowScoreboard] = useState(false);
 
   useEffect(() => {
     console.log('Players changed:', connectedPlayers);
@@ -52,43 +58,40 @@ const Game = () => {
   }
 
   // Waiting / pre-start screen
-  if (lobbyCreated && (connectedPlayers.length !== 4 || gamePhase === 'waiting')) {
-    const playerCount = connectedPlayers.length;
-    const isHost = connectedPlayers[0]?.name === playerName;
-    const canStart = playerCount === 4;
-
-    return (
-      <div className="lobby-success-container">
-        <div className="success-message">
-          <h2>✅ Welcome to <strong>{lobbyName || `the Lobby`}</strong>!</h2>
-          <p>Player: <strong>{playerName}</strong></p>
-          <p className="player-count">Players: {playerCount}/4</p>
-          <div className="loading-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          {isHost && (
-            <div className="start-game-container">
-              <p>
-                {canStart
-                  ? 'All players have joined!'
-                  : `Waiting for ${4 - playerCount} more player(s)...`}
-              </p>
-              <button
-                className="start-game-btn"
-                onClick={startGame}
-                disabled={!canStart}
-                title={canStart ? 'Start the game' : 'Need 4 players to start'}
-              >
-                {canStart ? 'Start Game' : 'Waiting...'}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+  <WaitingRoom />
+  // if (lobbyCreated && (playersCount !== 4 || gamePhase === 'waiting')) {
+  //   return (
+  //     <div className="lobby-success-container">
+  //       <div className="success-message">
+  //         <h2>✅ Welcome to <strong>{lobbyName || `the Lobby`}</strong>!</h2>
+  //         <p>Player: <strong>{playerName}</strong></p>
+  //         <p className="player-count">Players: {playersCount}/4</p>
+  //         <div className="loading-dots">
+  //           <span></span>
+  //           <span></span>
+  //           <span></span>
+  //         </div>
+  //         {isHost && (
+  //           <div className="start-game-container">
+  //             <p>
+  //               {canStart
+  //                 ? 'All players have joined!'
+  //                 : `Waiting for ${4 - playersCount} more player(s)...`}
+  //             </p>
+  //             <button
+  //               className="start-game-btn"
+  //               onClick={startGame}
+  //               disabled={!canStart}
+  //               title={canStart ? 'Start the game' : 'Need 4 players to start'}
+  //             >
+  //               {canStart ? 'Start Game' : 'Waiting...'}
+  //             </button>
+  //           </div>
+  //         )}
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Main game UI
   return (

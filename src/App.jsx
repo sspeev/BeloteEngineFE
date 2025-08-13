@@ -1,9 +1,8 @@
-import React from 'react';
 import { GameProvider } from './context/gameContext';
 import Game from './components/Game';
 import './App.css';
 
-function App() {
+const App = () => {
   return (
     <GameProvider>
       <div className="App">

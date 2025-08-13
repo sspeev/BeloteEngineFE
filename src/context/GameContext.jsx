@@ -1,6 +1,6 @@
-import React, { createContext, useReducer, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useReducer, useContext, useEffect } from 'react';
 import apiService from '../services/api';
-import websocketService from '../services/webSocket';
+import signalRService from '../services/signalRService';
 
 const GameContext = createContext(null);
 
@@ -8,7 +8,8 @@ const initialState = {
   lobbyId: null,
   lobbyName: '',
   playerName: '',
-  connectedPlayers: [],          // single source of truth
+  connectedPlayers: [],
+  playersCount: 0,
   gameState: null,
   gamePhase: 'waiting',
   currentPlayer: null,
@@ -34,8 +35,6 @@ function gameReducer(state, action) {
       return { ...state, lobbyName: action.payload || '' };
     case 'SET_PHASE':
       return { ...state, gamePhase: action.payload };
-
-    // Unified game state update
     case 'SET_GAME_STATE': {
       const gs = action.payload || {};
       return {
@@ -49,17 +48,14 @@ function gameReducer(state, action) {
         loading: false
       };
     }
-
-    // Allow legacy dispatches
-    case 'SET_PLAYERS':
     case 'SET_CONNECTED_PLAYERS':
       return {
         ...state,
         connectedPlayers: Array.isArray(action.payload)
           ? [...action.payload]
-          : []
+          : [],
+        playersCount: action.payload.length
       };
-
     case 'PLAYER_JOINED': {
       const p = action.payload;
       if (!p) return state;
@@ -69,7 +65,6 @@ function gameReducer(state, action) {
         : [...state.connectedPlayers, p];
       return { ...state, connectedPlayers };
     }
-
     case 'PLAYER_LEFT': {
       const id = action.payload?.playerId || action.payload?.id;
       if (!id) return state;
@@ -93,74 +88,42 @@ function gameReducer(state, action) {
   }
 }
 
-export function GameProvider({ children }) {
+export function GameProvider({ children, lobbyId, playerName, token }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
-  const autoStartRef = useRef(false);
 
-  // WebSocket bindings
-  useEffect(() => {
-    const onGameState = gs => dispatch({ type: 'SET_GAME_STATE', payload: gs });
-    const onPlayerJoined = p => dispatch({ type: 'PLAYER_JOINED', payload: p });
-    const onPlayerLeft = p => dispatch({ type: 'PLAYER_LEFT', payload: p });
-    const onConnected = () =>
-      dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
-    const onDisconnected = () =>
-      dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'disconnected' });
-    const onError = err => {
-      dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
-      dispatch({
-        type: 'SET_ERROR',
-        payload: err?.message || 'WebSocket error'
+    useEffect(() => {
+    dispatch({ type: 'SET_CURRENT_PLAYER', payload: playerName });
+    
+    // Connect to SignalR
+    signalRService.connect(lobbyId, token)
+      .then(() => {
+        dispatch({ type: 'CONNECTION_STATE', payload: "connected" });
+        return signalRService.invoke('JoinGame', lobbyId);
+      })
+      .catch(error => {
+        console.error('Error connecting to SignalR or joining game:', error);
       });
-    };
-
-    websocketService.on('gameStateUpdate', onGameState);
-    websocketService.on('playerJoined', onPlayerJoined);
-    websocketService.on('playerLeft', onPlayerLeft);
-    websocketService.on('connected', onConnected);
-    websocketService.on('disconnected', onDisconnected);
-    websocketService.on('error', onError);
-
+    
+    // Listen for player count updates
+    signalRService.on('playerCountUpdated', (count) => {
+      dispatch({ type: 'UPDATE_PLAYER_COUNT', payload: count });
+    });
+    
+    // Listen for player list updates
+    signalRService.on('playersUpdated', (players) => {
+      dispatch({ type: 'UPDATE_PLAYERS', payload: players });
+    });
+    
+    // Listen for game start
+    signalRService.on('gameStarted', () => {
+      dispatch({ type: 'GAME_STARTED' });
+    });
+    
+    // Cleanup on unmount
     return () => {
-      websocketService.off('gameStateUpdate', onGameState);
-      websocketService.off('playerJoined', onPlayerJoined);
-      websocketService.off('playerLeft', onPlayerLeft);
-      websocketService.off('connected', onConnected);
-      websocketService.off('disconnected', onDisconnected);
-      websocketService.off('error', onError);
+      signalRService.disconnect();
     };
-  }, []);
-
-  // Connect WebSocket
-  useEffect(() => {
-    if (
-      state.playerName &&
-      state.lobbyId &&
-      state.connectionStatus === 'disconnected'
-    ) {
-      websocketService.connect(state.playerName, state.lobbyId);
-    }
-  }, [state.playerName, state.lobbyId, state.connectionStatus]);
-
-  // Optional auto-start
-  useEffect(() => {
-    if (
-      state.gamePhase === 'waiting' &&
-      state.connectedPlayers.length === 4 &&
-      state.connectedPlayers[0]?.name === state.playerName &&
-      !autoStartRef.current
-    ) {
-      autoStartRef.current = true;
-      apiService.startGame?.(state.lobbyId).catch(() => {
-        autoStartRef.current = false;
-      });
-    }
-  }, [
-    state.connectedPlayers,
-    state.gamePhase,
-    state.playerName,
-    state.lobbyId
-  ]);
+  }, [lobbyId, playerName, token]);
 
   const fetchInitialState = async lobbyId => {
     try {
@@ -260,11 +223,10 @@ export function GameProvider({ children }) {
     }
   };
 
-  // Provide both connectedPlayers and a players alias
-  const value = {
+  const statingVariables = {
     ...state,
-    players: state.connectedPlayers, // alias (if some components still use players)
     connectedPlayers: state.connectedPlayers,
+    playersCount: state.connectedPlayers.length,
     createLobby,
     joinLobby,
     startGame,
@@ -273,10 +235,18 @@ export function GameProvider({ children }) {
   };
 
   return (
-    <GameContext.Provider value={value}>{children}</GameContext.Provider>
+    <GameContext.Provider value={
+      statingVariables
+    }>
+      {children}
+    </GameContext.Provider>
   );
 }
 
 export function useGame() {
-  return useContext(GameContext);
+  const context = useContext(GameContext);
+  if (!context) {
+    throw new Error('useGame must be used within a GameProvider');
+  }
+  return context;
 }

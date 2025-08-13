@@ -18,11 +18,11 @@ const GameLobby = () => {
 
 
 
-  useEffect(() => {
-    if (view === 'join') {
-      getAvailableLobbies();
-    }
-  }, [view, getAvailableLobbies]);
+  // useEffect(() => {
+  //   if (view === 'join') {
+  //     getAvailableLobbies();
+  //   }
+  // }, [view, getAvailableLobbies]);
 
   const handleCreateLobby = async (e) => {
     e.preventDefault();

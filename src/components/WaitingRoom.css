@@ -1,0 +1,79 @@
+.waiting-room-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.player-count {
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  height: 20px;
+  background-color: #ddd;
+  border-radius: 10px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.5s ease-in-out;
+}
+
+.players-list {
+  margin-bottom: 30px;
+}
+
+.players-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.players-list li {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #eee;
+  border-radius: 4px;
+}
+
+.current-player {
+  font-weight: bold;
+  background-color: #e3f2fd !important;
+}
+
+.waiting-message {
+  color: #777;
+  font-style: italic;
+  margin-top: 15px;
+}
+
+.start-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.start-button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.start-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.ready-message {
+  color: #4CAF50;
+  font-weight: bold;
+  margin-top: 20px;
+}
