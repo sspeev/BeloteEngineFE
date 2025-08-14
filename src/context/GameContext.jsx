@@ -102,7 +102,7 @@ export function GameProvider({ children }) {
         dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
 
         // Optional: tell server we joined (depends on your hub)
-        signalRService.invoke('JoinGame', state.lobbyId).catch(() => { });
+        signalRService.invoke('JoinLobby', state.lobbyId, state.playerName).catch(() => { });
       })
       .catch(error => {
         console.error('SignalR connect failed:', error);

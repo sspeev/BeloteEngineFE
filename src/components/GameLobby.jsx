@@ -1,29 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/gameContext';
 
-const GameLobby = () => {
+const GameLobby = ({ setPlayersCountDisplayer }) => {
+
   const {
     createLobby,
     joinLobby,
     getAvailableLobbies,
+    playersCount,
     availableLobbies,
     loading
   } = useGame();
 
-  
   const [playerName, setPlayerName] = useState('');
   const [lobbyName, setLobbyName] = useState('');
   const [selectedLobbyId, setSelectedLobbyId] = useState('');
-  const [playerCount, setPlayerCount] = useState(0);
   const [view, setView] = useState('main'); // 'main', 'create', 'join'
 
-
-
-  // useEffect(() => {
-  //   if (view === 'join') {
-  //     getAvailableLobbies();
-  //   }
-  // }, [view, getAvailableLobbies]);
 
   const handleCreateLobby = async (e) => {
     e.preventDefault();
@@ -36,14 +29,13 @@ const GameLobby = () => {
     e.preventDefault();
     if (playerName.trim() && selectedLobbyId) {
       await joinLobby(playerName.trim(), selectedLobbyId);
-      setPlayerCount(playerCount + 1);
     }
   };
 
   const refreshLobbies = () => {
     getAvailableLobbies();
   };
-
+  
   return (
     <div className="lobby-container">
       <h1>Welcome to Belote</h1>
@@ -153,8 +145,10 @@ const GameLobby = () => {
           </form>
           <button
             className="back-button"
-            onClick={() => setView('main')}
-          >
+            onClick={() => {
+              setView('main'),
+                setPlayersCountDisplayer(playersCount)
+            }}>
             Back
           </button>
         </div>
