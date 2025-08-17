@@ -1,6 +1,6 @@
 import React, { createContext, useReducer, useContext, useEffect } from 'react';
 import apiService from '../services/api';
-import signalRService from '../services/signalRService';
+//import signalRService from '../services/signalRService';
 
 const GameContext = createContext(null);
 
@@ -9,7 +9,6 @@ const initialState = {
   lobbyName: '',
   playerName: '',
   connectedPlayers: [],
-  playersCount: 0,
   gameState: null,
   gamePhase: 'waiting',
   currentPlayer: null,
@@ -51,19 +50,27 @@ function gameReducer(state, action) {
     case 'SET_CURRENT_PLAYER':
       return { ...state, currentPlayer: action.payload };
     case 'SET_CONNECTED_PLAYERS':
+      console.log('REDUCER: Set connected players', action.payload);
+      return { ...state, connectedPlayers: [...action.payload] }; // new array ref
+    case 'PLAYER_JOINED': {
+      // Log to see if this is getting called at all
+      console.log('REDUCER: Player joined action received', action.payload);
+
+      // Create a new player object
+      const newPlayer = action.payload;
+
+      // Only add if not already present (avoid duplicates)
+      const alreadyExists = state.connectedPlayers.some(
+        p => p.id === newPlayer.id || p.name === newPlayer.name
+      );
+
+      // Important: ALWAYS return a new array to trigger React re-render
       return {
         ...state,
-        connectedPlayers: Array.isArray(action.payload) ? [...action.payload] : [],
-        playersCount: Array.isArray(action.payload) ? action.payload.length : 0
+        connectedPlayers: alreadyExists
+          ? [...state.connectedPlayers]  // copy array even if no change
+          : [...state.connectedPlayers, newPlayer]  // add the new player
       };
-    case 'PLAYER_JOINED': {
-      const p = action.payload;
-      if (!p) return state;
-      const exists = state.connectedPlayers.some(x => x.id === p.id);
-      const connectedPlayers = exists
-        ? state.connectedPlayers.map(x => (x.id === p.id ? p : x))
-        : [...state.connectedPlayers, p];
-      return { ...state, connectedPlayers };
     }
     case 'PLAYER_LEFT': {
       const id = action.payload?.playerId || action.payload?.id;
@@ -95,30 +102,15 @@ export function GameProvider({ children }) {
   useEffect(() => {
     if (!state.lobbyId) return;
 
-    dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' });
-
-    signalRService.connect(state.lobbyId)
-      .then(() => {
-        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
-
-        // Optional: tell server we joined (depends on your hub)
-        signalRService.invoke('JoinLobby', state.lobbyId, state.playerName).catch(() => { });
-      })
-      .catch(error => {
-        console.error('SignalR connect failed:', error);
-        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
-        dispatch({ type: 'SET_ERROR', payload: error.message });
-      });
-
-    // Handlers from server (ensure these names match your Hub)
+    // Define handlers FIRST
     const onPlayersUpdated = (players) => {
       dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: players || [] });
     };
-    const onPlayerJoined = (player) => {
-      dispatch({ type: 'PLAYER_JOINED', payload: player });
+    const onPlayerJoined = (payload) => {
+      dispatch({ type: 'PLAYER_JOINED', payload });
     };
-    const onPlayerLeft = (player) => {
-      dispatch({ type: 'PLAYER_LEFT', payload: player });
+    const onPlayerLeft = (payload) => {
+      dispatch({ type: 'PLAYER_LEFT', payload });
     };
     const onGameState = (gs) => {
       dispatch({ type: 'SET_GAME_STATE', payload: gs });
@@ -127,23 +119,37 @@ export function GameProvider({ children }) {
       dispatch({ type: 'SET_PHASE', payload: 'bidding' });
     };
 
-    // Register (PascalCase to match common SignalR naming)
-    signalRService.on('PlayersUpdated', onPlayersUpdated);
-    signalRService.on('PlayerJoined', onPlayerJoined);
-    signalRService.on('PlayerLeft', onPlayerLeft);
-    signalRService.on('GameStateUpdated', onGameState);
-    signalRService.on('GameStarted', onGameStarted);
+    // Register handlers BEFORE connecting so the service attaches them on start
+    // signalRService.on('PlayersUpdated', onPlayersUpdated);
+    // signalRService.on('PlayerJoined', onPlayerJoined);
+    // signalRService.on('PlayerLeft', onPlayerLeft);
+    // signalRService.on('GameStateUpdated', onGameState);
+    // signalRService.on('GameStarted', onGameStarted);
+
+    dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' });
+
+    // signalRService.connect(state.lobbyId, state.playerName)
+    //   .then(async () => {
+    //     dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
+    //     // Join the hub group so this tab receives group broadcasts
+    //     await signalRService.invoke('JoinLobby', state.lobbyId, state.playerName);
+    //   })
+    //   .catch(error => {
+    //     console.error('SignalR connect failed:', error);
+    //     dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
+    //     dispatch({ type: 'SET_ERROR', payload: error.message });
+    //   });
 
     return () => {
-      signalRService.off('PlayersUpdated', onPlayersUpdated);
-      signalRService.off('PlayerJoined', onPlayerJoined);
-      signalRService.off('PlayerLeft', onPlayerLeft);
-      signalRService.off('GameStateUpdated', onGameState);
-      signalRService.off('GameStarted', onGameStarted);
-      signalRService.disconnect();
+      // signalRService.off('PlayersUpdated', onPlayersUpdated);
+      // signalRService.off('PlayerJoined', onPlayerJoined);
+      // signalRService.off('PlayerLeft', onPlayerLeft);
+      // signalRService.off('GameStateUpdated', onGameState);
+      // signalRService.off('GameStarted', onGameStarted);
+      // signalRService.disconnect();
       dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'disconnected' });
     };
-  }, [state.lobbyId]);
+  }, [state.lobbyId, state.playerName]);
 
   const fetchInitialState = async (lobbyId) => {
     try {

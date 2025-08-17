@@ -1,26 +1,24 @@
 import { useGame } from '../context/gameContext';
 import './WaitingRoom.css';
 
-const WaitingRoom = ({ playersCountDisplayer }) => {
+const WaitingRoom = ({ playersCount }) => {
   const {
-    playersCount,
     connectedPlayers,
     playerName,
     startGame,
   } = useGame();
 
   const isHost = connectedPlayers.length > 0 && connectedPlayers[0]?.name === playerName;
-
   return (
     <div className="waiting-room-container">
       <h2>Game Lobby</h2>
 
       <div className="player-count">
-        <h3>Players: {playersCountDisplayer} / 4</h3>
+        <h3>Players: {playersCount} / 4</h3>
         <div className="progress-bar">
           <div
             className="progress"
-            style={{ width: `${(playersCountDisplayer / 4) * 100}%` }}
+            style={{ width: `${(playersCount / 4) * 100}%` }}
           ></div>
         </div>
       </div>

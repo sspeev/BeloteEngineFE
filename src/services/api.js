@@ -17,26 +17,35 @@ class ApiService {
 
         try {
             const response = await fetch(url, config);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            // Check if response has content before parsing JSON
-            const contentType = response.headers.get('content-type');
-            const contentLength = response.headers.get('content-length');
-
-            // If no content or content-length is 0, return null
-            if (contentLength === '0' || !contentType?.includes('application/json')) {
-                return null;
-            }
-
-            // Check if response body is empty
+            
+            // Get response text first
             const text = await response.text();
+            
+            if (!response.ok) {
+                // Try to parse error message from response
+                let errorMessage = `HTTP error! status: ${response.status}`;
+                try {
+                    const errorData = JSON.parse(text);
+                    errorMessage = errorData.message || errorData.title || errorMessage;
+                } catch {
+                    // If not JSON, use text as error message
+                    errorMessage = text || errorMessage;
+                }
+                throw new Error(errorMessage);
+            }
+
+            // Check if response has content
             if (!text || text.trim() === '') {
                 return null;
             }
 
-            return JSON.parse(text);
+            // Try to parse as JSON
+            try {
+                return JSON.parse(text);
+            } catch {
+                // If not JSON, return the text
+                return text;
+            }
         } catch (error) {
             console.error('API request failed:', error);
             throw error;

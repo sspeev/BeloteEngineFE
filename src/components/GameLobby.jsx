@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/gameContext';
 
-const GameLobby = ({ setPlayersCountDisplayer }) => {
+const GameLobby = ({
+  playersCount,
+  setPlayersCount
+ }) => {
 
   const {
     createLobby,
     joinLobby,
     getAvailableLobbies,
-    playersCount,
     availableLobbies,
     loading
   } = useGame();
@@ -26,9 +28,26 @@ const GameLobby = ({ setPlayersCountDisplayer }) => {
   };
 
   const handleJoinLobby = async (e) => {
+
+    const conn = new signalR.HubConnectionBuilder()
+      .withUrl(`https://localhost:7132/beloteHub?lobbyId=${encodeURIComponent(lobbyId)}`)
+      .withAutomaticReconnect([0, 2000, 10000, 30000, null])
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    conn.on("JoinLobby", (selectedLobbyId, msg) => {
+      console.log(`Joined lobby ${selectedLobbyId}: ${msg}`);
+    });
+
+    await conn.start();
+    await conn.invoke("JoinLobby", {selectedLobbyId, playerName});
+
+    setConnection(conn);
+
     e.preventDefault();
     if (playerName.trim() && selectedLobbyId) {
       await joinLobby(playerName.trim(), selectedLobbyId);
+      setPlayersCount(playersCount + 1);
     }
   };
 
@@ -145,10 +164,7 @@ const GameLobby = ({ setPlayersCountDisplayer }) => {
           </form>
           <button
             className="back-button"
-            onClick={() => {
-              setView('main'),
-                setPlayersCountDisplayer(playersCount)
-            }}>
+            onClick={() => setView('main')}>
             Back
           </button>
         </div>

@@ -47,14 +47,14 @@
 }
 
 .waiting-message {
-  color: #777;
+  color: black;
   font-style: italic;
   margin-top: 15px;
 }
 
 .start-button {
   background-color: #4CAF50;
-  color: white;
+  color: black;
   padding: 12px 24px;
   border: none;
   border-radius: 4px;
