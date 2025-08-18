@@ -1,6 +1,6 @@
 import React, { createContext, useReducer, useContext, useEffect } from 'react';
 import apiService from '../services/api';
-//import signalRService from '../services/signalRService';
+import signalRService from '../services/signalRService';
 
 const GameContext = createContext(null);
 
@@ -9,7 +9,7 @@ const initialState = {
   lobbyName: '',
   playerName: '',
   connectedPlayers: [],
-  gameState: null,
+  //gameState: null,
   gamePhase: 'waiting',
   currentPlayer: null,
   availableLobbies: [],
@@ -34,26 +34,25 @@ function gameReducer(state, action) {
       return { ...state, lobbyName: action.payload || '' };
     case 'SET_PHASE':
       return { ...state, gamePhase: action.payload };
-    case 'SET_GAME_STATE': {
-      const gs = action.payload || {};
-      return {
-        ...state,
-        gameState: gs,
-        connectedPlayers: gs.connectedPlayers
-          ? [...gs.connectedPlayers]
-          : state.connectedPlayers,
-        gamePhase: gs.phase || state.gamePhase,
-        currentPlayer: gs.currentPlayer ?? state.currentPlayer,
-        loading: false
-      };
-    }
+    // case 'SET_GAME_STATE': {
+    //   const gs = action.payload || {};
+    //   return {
+    //     ...state,
+    //     gameState: gs,
+    //     connectedPlayers: gs.connectedPlayers
+    //       ? [...gs.connectedPlayers]
+    //       : state.connectedPlayers,
+    //     gamePhase: gs.phase || state.gamePhase,
+    //     currentPlayer: gs.currentPlayer ?? state.currentPlayer,
+    //     loading: false
+    //   };
+    // }
     case 'SET_CURRENT_PLAYER':
       return { ...state, currentPlayer: action.payload };
     case 'SET_CONNECTED_PLAYERS':
       console.log('REDUCER: Set connected players', action.payload);
       return { ...state, connectedPlayers: [...action.payload] }; // new array ref
     case 'PLAYER_JOINED': {
-      // Log to see if this is getting called at all
       console.log('REDUCER: Player joined action received', action.payload);
 
       // Create a new player object
@@ -98,58 +97,66 @@ function gameReducer(state, action) {
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-  // Connect to SignalR when we have lobbyId
+  //Connection SignalR
   useEffect(() => {
-    if (!state.lobbyId) return;
+    if (!state.lobbyId || !state.playerName) return;
 
-    // Define handlers FIRST
     const onPlayersUpdated = (players) => {
+      console.log(`[${state.playerName}] EVENT: Players updated:`, players);
       dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: players || [] });
     };
     const onPlayerJoined = (payload) => {
+      console.log(`[${state.playerName}] EVENT: Player joined:`, payload);
       dispatch({ type: 'PLAYER_JOINED', payload });
     };
     const onPlayerLeft = (payload) => {
+      console.log(`[${state.playerName}] EVENT: Player left:`, payload);
       dispatch({ type: 'PLAYER_LEFT', payload });
     };
-    const onGameState = (gs) => {
-      dispatch({ type: 'SET_GAME_STATE', payload: gs });
-    };
+    // const onGameState = (gs) => {
+
+    //   dispatch({ type: 'SET_GAME_STATE', payload: gs });
+    // };
     const onGameStarted = () => {
+      console.log("EVENT: Game started");
       dispatch({ type: 'SET_PHASE', payload: 'bidding' });
     };
 
-    // Register handlers BEFORE connecting so the service attaches them on start
-    // signalRService.on('PlayersUpdated', onPlayersUpdated);
-    // signalRService.on('PlayerJoined', onPlayerJoined);
-    // signalRService.on('PlayerLeft', onPlayerLeft);
-    // signalRService.on('GameStateUpdated', onGameState);
-    // signalRService.on('GameStarted', onGameStarted);
+    // Register event handlers BEFORE connecting
+    signalRService.on('PlayersUpdated', onPlayersUpdated);
+    signalRService.on('PlayerJoined', onPlayerJoined);
+    signalRService.on('PlayerLeft', onPlayerLeft);
+    signalRService.on('GameStarted', onGameStarted);
 
-    dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' });
+    // Connect and wait, don't try to invoke immediately
+    async function connectToHub() {
+      try {
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' });
+        await signalRService.connect(state.lobbyId, state.playerName);
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
 
-    // signalRService.connect(state.lobbyId, state.playerName)
-    //   .then(async () => {
-    //     dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
-    //     // Join the hub group so this tab receives group broadcasts
-    //     await signalRService.invoke('JoinLobby', state.lobbyId, state.playerName);
-    //   })
-    //   .catch(error => {
-    //     console.error('SignalR connect failed:', error);
-    //     dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
-    //     dispatch({ type: 'SET_ERROR', payload: error.message });
-    //   });
+        // Ensure connection is ready before invoking
+        // If needed, you can now safely invoke methods
+        // await signalRService.invoke('SomeMethod', ...args);
+      } catch (error) {
+        console.error('SignalR connect failed:', error);
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
+        dispatch({ type: 'SET_ERROR', payload: error.message });
+      }
+    }
+
+    connectToHub();
 
     return () => {
-      // signalRService.off('PlayersUpdated', onPlayersUpdated);
-      // signalRService.off('PlayerJoined', onPlayerJoined);
-      // signalRService.off('PlayerLeft', onPlayerLeft);
-      // signalRService.off('GameStateUpdated', onGameState);
-      // signalRService.off('GameStarted', onGameStarted);
-      // signalRService.disconnect();
+      // Cleanup handlers
+      signalRService.off('PlayersUpdated', onPlayersUpdated);
+      signalRService.off('PlayerJoined', onPlayerJoined);
+      signalRService.off('PlayerLeft', onPlayerLeft);
+      signalRService.off('GameStarted', onGameStarted);
+      signalRService.disconnect();
       dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'disconnected' });
     };
-  }, [state.lobbyId, state.playerName]);
+  }, [state.lobbyId, state.playerName, state.dispatch]);
 
   const fetchInitialState = async (lobbyId) => {
     try {
@@ -187,25 +194,49 @@ export function GameProvider({ children }) {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
 
+      // Get lobby list if needed
       if (!state.availableLobbies.length) {
         const list = await apiService.getAvailableLobbies();
         dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
       }
 
-      const { lobby, error } = await apiService.joinLobby(playerName, lobbyId);
-      if (error) throw new Error(error);
+      // Join via HTTP API first
+      const  {lobby, errorMessage } = await apiService.joinLobby(playerName, lobbyId);
+      if (errorMessage) throw new Error(errorMessage);
 
+      // Update state with initial values
       dispatch({ type: 'SET_LOBBY_ID', payload: lobbyId });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
-      dispatch({ type: 'SET_LOBBY_NAME', payload: lobby?.name || `Lobby ${lobbyId}` });
+      dispatch({ type: 'SET_LOBBY_NAME', payload: lobby?.name });
+
       if (lobby?.connectedPlayers) {
         dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: lobby.connectedPlayers });
       }
 
+      try {
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' });
+
+        // Connect to SignalR and ensure it's fully ready
+        await signalRService.connect(lobbyId, playerName);
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
+
+        // The connection is now guaranteed to be ready for invocations
+        console.log('SignalR ready, invoking JoinLobby...');
+        await signalRService.invoke('JoinLobby', lobbyId, playerName);
+        console.log('JoinLobby invocation complete');
+
+      } catch (connError) {
+        console.error('SignalR connection/join failed:', connError);
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
+        dispatch({ type: 'SET_ERROR', payload: `SignalR error: ${connError.message}` });
+      }
+
+      // Complete the process
       await fetchInitialState(lobbyId);
       dispatch({ type: 'SET_LOADING', payload: false });
       return lobby;
     } catch (e) {
+      console.error('Join lobby failed:', e);
       dispatch({ type: 'SET_ERROR', payload: e.message });
       dispatch({ type: 'SET_LOADING', payload: false });
     }

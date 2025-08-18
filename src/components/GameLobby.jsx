@@ -1,60 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/gameContext';
 
-const GameLobby = ({
-  playersCount,
-  setPlayersCount
- }) => {
-
+const GameLobby = ({ setHasJoinedLobby }) => {
   const {
     createLobby,
     joinLobby,
-    getAvailableLobbies,
+    startGame,
     availableLobbies,
+    getAvailableLobbies,
     loading
   } = useGame();
 
   const [playerName, setPlayerName] = useState('');
   const [lobbyName, setLobbyName] = useState('');
   const [selectedLobbyId, setSelectedLobbyId] = useState('');
-  const [view, setView] = useState('main'); // 'main', 'create', 'join'
-
+  const [view, setView] = useState('main');
 
   const handleCreateLobby = async (e) => {
     e.preventDefault();
+
     if (playerName.trim()) {
-      await createLobby(playerName.trim(), lobbyName.trim() || null);
+      const result = await createLobby(playerName.trim(), lobbyName.trim() || null);
+      if (result) {
+        setSelectedLobbyId(result.id || result.lobbyId);
+        setHasJoinedLobby(true);
+      }
     }
   };
 
   const handleJoinLobby = async (e) => {
-
-    const conn = new signalR.HubConnectionBuilder()
-      .withUrl(`https://localhost:7132/beloteHub?lobbyId=${encodeURIComponent(lobbyId)}`)
-      .withAutomaticReconnect([0, 2000, 10000, 30000, null])
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
-
-    conn.on("JoinLobby", (selectedLobbyId, msg) => {
-      console.log(`Joined lobby ${selectedLobbyId}: ${msg}`);
-    });
-
-    await conn.start();
-    await conn.invoke("JoinLobby", {selectedLobbyId, playerName});
-
-    setConnection(conn);
-
     e.preventDefault();
+
     if (playerName.trim() && selectedLobbyId) {
-      await joinLobby(playerName.trim(), selectedLobbyId);
-      setPlayersCount(playersCount + 1);
+      const result = await joinLobby(playerName.trim(), selectedLobbyId);
+      if (result) {
+        setHasJoinedLobby(true);
+      }
+    }
+  };
+
+  const handleStartGame = async () => {
+    if (isHost && playersCount === 4) {
+      await startGame();
     }
   };
 
   const refreshLobbies = () => {
     getAvailableLobbies();
   };
-  
+
   return (
     <div className="lobby-container">
       <h1>Welcome to Belote</h1>
@@ -62,16 +56,10 @@ const GameLobby = ({
       {view === 'main' && (
         <div className="lobby-main">
           <div className="lobby-options">
-            <button
-              className="lobby-option-btn"
-              onClick={() => setView('create')}
-            >
+            <button className="lobby-option-btn" onClick={() => setView('create')}>
               Create New Lobby
             </button>
-            <button
-              className="lobby-option-btn"
-              onClick={() => setView('join')}
-            >
+            <button className="lobby-option-btn" onClick={() => setView('join')}>
               Join Existing Lobby
             </button>
           </div>
@@ -99,10 +87,7 @@ const GameLobby = ({
               Create Lobby
             </button>
           </form>
-          <button
-            className="back-button"
-            onClick={() => setView('main')}
-          >
+          <button className="back-button" onClick={() => setView('main')}>
             Back
           </button>
         </div>
@@ -119,19 +104,13 @@ const GameLobby = ({
               onChange={(e) => setPlayerName(e.target.value)}
               required
             />
-
             <div className="lobby-selection">
               <div className="lobby-header">
                 <h3>Available Lobbies</h3>
-                <button
-                  type="button"
-                  onClick={refreshLobbies}
-                  className="refresh-btn"
-                >
+                <button type="button" onClick={refreshLobbies} className="refresh-btn">
                   Refresh
                 </button>
               </div>
-
               <div className="lobbies-list">
                 {availableLobbies?.map(lobby => (
                   <div
@@ -146,7 +125,6 @@ const GameLobby = ({
                     </div>
                   </div>
                 ))}
-
                 {availableLobbies?.length === 0 && (
                   <div className="no-lobbies">
                     No available lobbies. Create one instead!
@@ -154,17 +132,11 @@ const GameLobby = ({
                 )}
               </div>
             </div>
-
-            <button
-              type="submit"
-              disabled={loading || !selectedLobbyId}
-            >
+            <button type="submit" disabled={loading || !selectedLobbyId}>
               Join Selected Lobby
             </button>
           </form>
-          <button
-            className="back-button"
-            onClick={() => setView('main')}>
+          <button className="back-button" onClick={() => setView('main')}>
             Back
           </button>
         </div>
