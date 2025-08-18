@@ -9,7 +9,6 @@ const initialState = {
   lobbyName: '',
   playerName: '',
   connectedPlayers: [],
-  //gameState: null,
   gamePhase: 'waiting',
   currentPlayer: null,
   availableLobbies: [],
@@ -33,20 +32,18 @@ function gameReducer(state, action) {
     case 'SET_LOBBY_NAME':
       return { ...state, lobbyName: action.payload || '' };
     case 'SET_PHASE':
+      console.log('Updating game phase from', state.gamePhase, 'to', action.payload);
       return { ...state, gamePhase: action.payload };
-    // case 'SET_GAME_STATE': {
-    //   const gs = action.payload || {};
-    //   return {
-    //     ...state,
-    //     gameState: gs,
-    //     connectedPlayers: gs.connectedPlayers
-    //       ? [...gs.connectedPlayers]
-    //       : state.connectedPlayers,
-    //     gamePhase: gs.phase || state.gamePhase,
-    //     currentPlayer: gs.currentPlayer ?? state.currentPlayer,
-    //     loading: false
-    //   };
-    // }
+    case 'SET_GAME_STATE': {
+      const { lobby } = action.payload || {};
+      console.log('Game state update received:', lobby);
+      return {
+        ...state,
+        gamePhase: state.gamePhase,
+        connectedPlayers: lobby.connectedPlayers,
+        currentPlayer: state.currentPlayer
+      };
+    }
     case 'SET_CURRENT_PLAYER':
       return { ...state, currentPlayer: action.payload };
     case 'SET_CONNECTED_PLAYERS':
@@ -63,7 +60,6 @@ function gameReducer(state, action) {
         p => p.id === newPlayer.id || p.name === newPlayer.name
       );
 
-      // Important: ALWAYS return a new array to trigger React re-render
       return {
         ...state,
         connectedPlayers: alreadyExists
@@ -113,31 +109,30 @@ export function GameProvider({ children }) {
       console.log(`[${state.playerName}] EVENT: Player left:`, payload);
       dispatch({ type: 'PLAYER_LEFT', payload });
     };
-    // const onGameState = (gs) => {
-
-    //   dispatch({ type: 'SET_GAME_STATE', payload: gs });
-    // };
+    const onGameState = (gs) => {
+      dispatch({ type: 'SET_GAME_STATE', payload: gs });
+    };
     const onGameStarted = () => {
-      console.log("EVENT: Game started");
+      console.log(`[${state.playerName}] EVENT: Game started with data:`, gameData);
       dispatch({ type: 'SET_PHASE', payload: 'bidding' });
+      if (gameData) {
+        dispatch({ type: 'SET_GAME_STATE', payload: gameData });
+      }
     };
 
-    // Register event handlers BEFORE connecting
     signalRService.on('PlayersUpdated', onPlayersUpdated);
     signalRService.on('PlayerJoined', onPlayerJoined);
     signalRService.on('PlayerLeft', onPlayerLeft);
     signalRService.on('GameStarted', onGameStarted);
+    signalRService.on('GameStateUpdated', onGameState);
 
-    // Connect and wait, don't try to invoke immediately
     async function connectToHub() {
       try {
+
         dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' });
         await signalRService.connect(state.lobbyId, state.playerName);
         dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
 
-        // Ensure connection is ready before invoking
-        // If needed, you can now safely invoke methods
-        // await signalRService.invoke('SomeMethod', ...args);
       } catch (error) {
         console.error('SignalR connect failed:', error);
         dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
@@ -201,7 +196,7 @@ export function GameProvider({ children }) {
       }
 
       // Join via HTTP API first
-      const  {lobby, errorMessage } = await apiService.joinLobby(playerName, lobbyId);
+      const { lobby, errorMessage } = await apiService.joinLobby(playerName, lobbyId);
       if (errorMessage) throw new Error(errorMessage);
 
       // Update state with initial values
@@ -242,28 +237,35 @@ export function GameProvider({ children }) {
     }
   };
 
+  const getAvailableLobbies = async () => {
+    const list = await apiService.getAvailableLobbies();
+    dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
+    return list;
+  };
+
   const startGame = async () => {
     if (!state.lobbyId) return;
     try {
+      dispatch({ type: 'SET_PHASE', payload: 'bidding' });
       await apiService.startGame(state.lobbyId);
-      // server should emit GameStarted/GameStateUpdated
+      console.log('Game started successfully');
     } catch (e) {
+      // Revert on error
+      dispatch({ type: 'SET_PHASE', payload: 'waiting' });
       dispatch({ type: 'SET_ERROR', payload: e.message });
     }
   };
+
 
   const startingVariables = {
     ...state,
     connectedPlayers: state.connectedPlayers,
     playersCount: state.connectedPlayers.length,
+    //gamePhase: state.connectedPlayers.length > 0 ? 'bidding' : 'waiting',
     createLobby,
     joinLobby,
     startGame,
-    getAvailableLobbies: async () => {
-      const list = await apiService.getAvailableLobbies();
-      dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
-      return list;
-    },
+    getAvailableLobbies,
     dispatch
   };
 

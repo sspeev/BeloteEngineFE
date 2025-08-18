@@ -6,7 +6,7 @@ import BiddingPanel from './BiddingPanel';
 import PlayerList from './PlayerList';
 import ScoreBoard from './ScoreBoard';
 import GameLobby from './GameLobby';
-import WaitingRoom from './WaitingRoom';
+//import WaitingRoom from './WaitingRoom';
 import './Game.css';
 
 
@@ -16,12 +16,20 @@ const Game = () => {
     playerName,
     gamePhase,
     error,
-    connectionStatus
+    connectionStatus,
+
+    startGame
   } = useGame();
 
+  useEffect(() => {
+    if (gamePhase === 'bidding') {
+      startGame();
+    }
+  }, [gamePhase]);
+
+  
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [hasJoinedLobby, setHasJoinedLobby] = useState(false);
-
 
   if (error) {
     return (
@@ -37,9 +45,9 @@ const Game = () => {
     return <GameLobby setHasJoinedLobby={setHasJoinedLobby} />;
   }
 
-  if (gamePhase === 'waiting') {
-    return <WaitingRoom />;
-  }
+  // if (gamePhase === 'waiting') {
+  //   return <WaitingRoom />;
+  // }
 
   return (
     <div className="game-container">

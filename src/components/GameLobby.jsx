@@ -5,7 +5,6 @@ const GameLobby = ({ setHasJoinedLobby }) => {
   const {
     createLobby,
     joinLobby,
-    startGame,
     availableLobbies,
     getAvailableLobbies,
     loading
@@ -36,12 +35,6 @@ const GameLobby = ({ setHasJoinedLobby }) => {
       if (result) {
         setHasJoinedLobby(true);
       }
-    }
-  };
-
-  const handleStartGame = async () => {
-    if (isHost && playersCount === 4) {
-      await startGame();
     }
   };
 

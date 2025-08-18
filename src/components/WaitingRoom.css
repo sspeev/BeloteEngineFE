@@ -43,7 +43,7 @@
 
 .current-player {
   font-weight: bold;
-  background-color: #e3f2fd !important;
+  /* background-color: #e3f2fd !important; */
 }
 
 .waiting-message {

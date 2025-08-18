@@ -3,7 +3,14 @@ import { useGame } from '../context/gameContext';
 import './PlayerList.css';
 
 function PlayerList() {
-  const { players, gameState, playerName, currentPlayer, lobbyId, leaveLobby } = useGame();
+  const { 
+    connectedPlayers, 
+    gameState, 
+    playerName, 
+    currentPlayer, 
+    lobbyId, 
+    leaveLobby 
+  } = useGame();
 
   const getPlayerStatus = (player) => {
     if (player.id === currentPlayer) return 'current-turn';
@@ -13,7 +20,7 @@ function PlayerList() {
   };
 
   const getPlayerTeam = (playerId) => {
-    const playerIndex = players?.findIndex(p => p.id === playerId);
+    const playerIndex = connectedPlayers?.findIndex(p => p.id === playerId);
     return playerIndex % 2 === 0 ? 'Team A' : 'Team B';
   };
 
@@ -36,7 +43,7 @@ function PlayerList() {
   return (
     <div className="player-list">
       <div className="player-list-header">
-        <h3>Players ({players?.length || 0}/4)</h3>
+        <h3>Players ({connectedPlayers?.length || 0}/4)</h3>
         <div className="lobby-info">
           <p>Lobby: {lobbyId}</p>
           <button className="leave-lobby-btn" onClick={handleLeaveLobby}>
@@ -46,7 +53,7 @@ function PlayerList() {
       </div>
 
       <div className="players-container">
-        {players?.map((player, index) => {
+        {connectedPlayers?.map((player, index) => {
           const status = getPlayerStatus(player);
           const connectionStatus = getConnectionStatus(player);
           const team = getPlayerTeam(player.id);
@@ -112,7 +119,7 @@ function PlayerList() {
           );
         })}
 
-        {Array.from({ length: 4 - (players?.length || 0) }).map((_, index) => (
+        {Array.from({ length: 4 - (connectedPlayers?.length || 0) }).map((_, index) => (
           <div key={`empty-${index}`} className="player-card empty">
             <div className="waiting-player">
               <div className="empty-slot-icon">👤</div>
@@ -122,9 +129,9 @@ function PlayerList() {
         ))}
       </div>
 
-      {gameState?.phase === 'waiting' && players?.length < 4 && (
+      {gameState?.phase === 'waiting' && connectedPlayers?.length < 4 && (
         <div className="game-not-ready">
-          <p>Waiting for {4 - (players?.length || 0)} more player(s) to join...</p>
+          <p>Waiting for {4 - (connectedPlayers?.length || 0)} more player(s) to join...</p>
           <div className="lobby-id-share">
             <p>Share Lobby ID: <strong>{lobbyId}</strong></p>
           </div>
