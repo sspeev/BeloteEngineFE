@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/gameContext';
-import './GameLobby.css';
-
 import Welcome from './Welcome';
-import './Welcome.css';
+import './GameLobby.css';
 
 const GameLobby = ({ setHasJoinedLobby }) => {
   const {
