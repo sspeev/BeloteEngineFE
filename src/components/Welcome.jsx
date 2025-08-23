@@ -28,11 +28,11 @@ export default function Welcome() {
 
             <section className="green-container flex flex-row gap-10
             w-full h-full bg-gradient-to-br from-[#29de00] to-[#003d1a] shadow-[4px_0px_5px_0px_rgba(255,0,0,0.25)]">
-                <div>
-                    <Card suit="Hearts" value="J" />
-                    <Card suit="Diamonds" value="J" />
-                    <Card suit="Clubs" value="J" />
-                    <Card suit="Spades" value="J" />
+                <div className="flex flex-row ">
+                    <Card className="-rotate-3" suit="Hearts" value="J" />
+                    <Card className="-rotate-6" suit="Diamonds" value="J" />
+                    <Card className="" suit="Clubs" value="J" />
+                    <Card className="" suit="Spades" value="J" />
                 </div>
                 <p className="text-center justify-center text-white text-[41px] font-semibold font-['Poppins'] leading-[45px]">
                     Az shte sum konkurentsiq na Belot.bg. Ako ne vi se davat pari i vi se
@@ -40,9 +40,9 @@ export default function Welcome() {
                 </p>
             </section>
 
-            {/* <div className="hearts w-[325px] h-[389px] left-[1174px] top-[1046.05px] absolute origin-top-left rotate-[-10.65deg] bg-gradient-to-b from-[#464545] to-[#877276]" />
-            <div className="clubs w-[319px] h-80 left-[1203px] top-[99.42px] absolute origin-top-left rotate-[-18.16deg] bg-gradient-to-b from-[#454545] to-[#abaaaa]" />
-            <div className="spades w-[388px] h-[414px] left-[-26.25px] top-[323.49px] absolute origin-top-left rotate-[25deg] bg-gradient-to-b from-[#29de00] to-[#003d1a]" /> */}
+            <div className="hearts text-[600px] left-[1174px] top-[1046.05px] absolute bg-gradient-to-b from-[#003d1a] to-[#29de00] bg-clip-text text-transparent origin-top-left rotate-[-10.65deg]">♥</div>
+            <div className="clubs text-[600px] left-[1203px] top-[99.42px] absolute origin-top-left rotate-[-18.16deg] bg-gradient-to-b from-[#003d1a] to-[#29de00] bg-clip-text text-transparent">♠</div>
+            <div className="spades text-[600px] left-[-26.25px] top-[323.49px] absolute origin-top-left rotate-[25deg] bg-gradient-to-b from-[#003d1a] to-[#29de00] bg-clip-text text-transparent">♣</div>
 
         </section >
     );

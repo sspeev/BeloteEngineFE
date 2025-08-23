@@ -136,9 +136,6 @@ const GameLobby = ({ setHasJoinedLobby }) => {
           </button>
         </div>
       )}
-      <footer>
-        <p>&copy; 2025 Belote Engine. All rights reserved.</p>
-      </footer>
     </div>
 
     //  <div className="lobby-container">
