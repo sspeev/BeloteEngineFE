@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../context/gameContext';
 import Welcome from './Welcome';
+import CreateForm from './CreateForm';
 import './GameLobby.css';
 
 const GameLobby = ({ setHasJoinedLobby }) => {
@@ -46,46 +47,37 @@ const GameLobby = ({ setHasJoinedLobby }) => {
 
   return (
 
-    <div className="lobby-container">
+    <div className="lobby-container relative overflow-hidden">
       {view === 'main' && (
-        // <div className="lobby-main">
-        //   <div className="lobby-options">
-        //     <button className="lobby-option-btn" onClick={() => setView('create')}>
-        //       Create New Lobby
-        //     </button>
-        //     <button className="lobby-option-btn" onClick={() => setView('join')}>
-        //       Join Existing Lobby
-        //     </button>
-        //   </div>
-        // </div>
-        <Welcome />
+        <Welcome setView={setView} />
       )}
 
       {view === 'create' && (
-        <div className="create-lobby-form">
-          <h2>Create New Lobby</h2>
-          <form onSubmit={handleCreateLobby}>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Lobby name (optional)"
-              value={lobbyName}
-              onChange={(e) => setLobbyName(e.target.value)}
-            />
-            <button type="submit" disabled={loading}>
-              Create Lobby
-            </button>
-          </form>
-          <button className="back-button" onClick={() => setView('main')}>
-            Back
-          </button>
-        </div>
+        // <div className="create-lobby-form">
+        //   <h2>Create New Lobby</h2>
+        //   <form onSubmit={handleCreateLobby}>
+        //     <input
+        //       type="text"
+        //       placeholder="Enter your name"
+        //       value={playerName}
+        //       onChange={(e) => setPlayerName(e.target.value)}
+        //       required
+        //     />
+        //     <input
+        //       type="text"
+        //       placeholder="Lobby name (optional)"
+        //       value={lobbyName}
+        //       onChange={(e) => setLobbyName(e.target.value)}
+        //     />
+        //     <button type="submit" disabled={loading}>
+        //       Create Lobby
+        //     </button>
+        //   </form>
+        //   <button className="back-button" onClick={() => setView('main')}>
+        //     Back
+        //   </button>
+        // </div>
+        <CreateForm />
       )}
 
       {view === 'join' && (
@@ -136,103 +128,9 @@ const GameLobby = ({ setHasJoinedLobby }) => {
           </button>
         </div>
       )}
+      <div className="hearts text-[500px] rotate-[25deg] bottom-1/5 -left-1 absolute bg-gradient-to-b from-[#003d1a] to-[#29de00] bg-clip-text text-transparent origin-top-left ">♥</div>
+      <div className="spades text-[500px] -rotate-[25deg] top-1/12 right-1 absolute origin-top-left bg-gradient-to-l from-neutral-800 to-[#454545] bg-clip-text text-transparent">♣</div>
     </div>
-
-    //  <div className="lobby-container">
-    //     <div className="bottom-section">
-    //       <div className="green-background"></div>
-    //       <div className="lobby-description">
-    //         Az shte sum konkurentsiq na Belot.bg. Ako ne vi se davat pari i vi se tsuka s priqteli ste na pravilnoto mqsto! Are mazna i priqtna igra!
-    //       </div>
-    //     </div>
-    //     <div className="top-section">
-    //       <div className="create-game-button">
-    //         <div className="create-button-bg"></div>
-    //         <div className="create-button-highlight"></div>
-    //         <div className="button-text">Create game<br/></div>
-    //       </div>
-    //       <div className="join-game-button">
-    //         <div className="join-button-bg"></div>
-    //         <div className="join-button-highlight"></div>
-    //         <div className="button-text">Join game<br/></div>
-    //       </div>
-    //       <div className="title-text">
-    //         <span className="title-white">Play </span>
-    //         <span className="title-green">Belote</span>
-    //         <span className="title-white"> online free with friends</span>
-    //       </div>
-    //       <div className="version-text">ALFA 0.0.1</div>
-    //     </div>
-    //     <div className="card-decoration-1"></div>
-    //     <div className="card-decoration-2"></div>
-    //     <div className="card-decoration-3"></div>
-
-    //     <div data-number="Jack" data-suit="Diamonds" className="card card-diamonds">
-    //       <div data-number="J" data-suit="Diamonds" className="card-corner card-corner-top-left">
-    //         <div className="card-value card-value-top">J</div>
-    //         <div data-property-1="Diamond" className="card-suit card-suit-top">
-    //           <div className="diamond-shape"></div>
-    //         </div>
-    //       </div>
-    //       <div data-number="J" data-suit="Diamonds" className="card-corner card-corner-bottom-right">
-    //         <div className="card-value card-value-bottom">J</div>
-    //         <div data-property-1="Diamond" className="card-suit card-suit-bottom">
-    //           <div className="diamond-shape"></div>
-    //         </div>
-    //       </div>
-    //       <img className="card-image" src="https://placehold.co/210x252" alt="Jack of Diamonds" />
-    //     </div>
-
-    //     <div data-number="Jack" data-suit="Hearts" className="card card-hearts">
-    //       <div data-number="J" data-suit="Hearts" className="card-corner card-corner-top-left">
-    //         <div className="card-value card-value-top">J</div>
-    //         <div data-property-1="Heart" className="card-suit card-suit-top">
-    //           <div className="heart-shape"></div>
-    //         </div>
-    //       </div>
-    //       <div data-number="J" data-suit="Hearts" className="card-corner card-corner-bottom-right">
-    //         <div className="card-value card-value-bottom">J</div>
-    //         <div data-property-1="Heart" className="card-suit card-suit-bottom">
-    //           <div className="heart-shape"></div>
-    //         </div>
-    //       </div>
-    //       <img className="card-image" src="https://placehold.co/173x238" alt="Jack of Hearts" />
-    //     </div>
-
-    //     <div data-number="Jack" data-suit="Spades" className="card card-spades">
-    //       <div data-number="J" data-suit="Spades" className="card-corner card-corner-top-left">
-    //         <div className="card-value card-value-top">J</div>
-    //         <div data-property-1="Spade" className="card-suit card-suit-top">
-    //           <div className="spade-shape"></div>
-    //         </div>
-    //       </div>
-    //       <div data-number="J" data-suit="Spades" className="card-corner card-corner-bottom-right">
-    //         <div className="card-value card-value-bottom">J</div>
-    //         <div data-property-1="Spade" className="card-suit card-suit-bottom">
-    //           <div className="spade-shape"></div>
-    //         </div>
-    //       </div>
-    //       <img className="card-image" src="https://placehold.co/137x217" alt="Jack of Spades" />
-    //     </div>
-
-    //     <div data-number="Jack" data-suit="Clubs" className="card card-clubs">
-    //       <div data-number="J" data-suit="Clubs" className="card-corner card-corner-top-left">
-    //         <div className="card-value card-value-top">J</div>
-    //         <div data-property-1="Club" className="card-suit card-suit-top">
-    //           <div className="club-shape"></div>
-    //         </div>
-    //       </div>
-    //       <div data-number="J" data-suit="Clubs" className="card-corner card-corner-bottom-right">
-    //         <div className="card-value card-value-bottom">J</div>
-    //         <div data-property-1="Club" className="card-suit card-suit-bottom">
-    //           <div className="club-shape"></div>
-    //         </div>
-    //       </div>
-    //       <img className="card-image" src="https://placehold.co/168x235" alt="Jack of Clubs" />
-    //     </div>
-
-    //     <div className="footer">© Stoyan Peev 2025</div>
-    //   </div>
   );
 }
 

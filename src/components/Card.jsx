@@ -9,8 +9,8 @@ function Card({ suit, value, /*onClick*/ }) {
     const symbols = {
       'Hearts': '♥',
       'Diamonds': '♦',
-      'Clubs': '♠',
-      'Spades': '♣',
+      'Spades': '♠',
+      'Clubs': '♣',
     };
     return symbols[suit] || suit;
   };
