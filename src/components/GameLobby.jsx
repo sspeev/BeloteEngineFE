@@ -77,7 +77,14 @@ const GameLobby = ({ setHasJoinedLobby }) => {
         //     Back
         //   </button>
         // </div>
-        <CreateForm />
+        <CreateForm
+          handleCreateLobby={handleCreateLobby}
+          playerName={playerName}
+          setPlayerName={setPlayerName}
+          lobbyName={lobbyName}
+          setLobbyName={setLobbyName}
+          setView={setView}
+        />
       )}
 
       {view === 'join' && (
@@ -128,8 +135,8 @@ const GameLobby = ({ setHasJoinedLobby }) => {
           </button>
         </div>
       )}
-      <div className="hearts text-[500px] rotate-[25deg] bottom-1/5 -left-1 absolute bg-gradient-to-b from-[#003d1a] to-[#29de00] bg-clip-text text-transparent origin-top-left ">♥</div>
-      <div className="spades text-[500px] -rotate-[25deg] top-1/12 right-1 absolute origin-top-left bg-gradient-to-l from-neutral-800 to-[#454545] bg-clip-text text-transparent">♣</div>
+      <div className="hearts text-[200px] lg:text-[500px] rotate-[25deg] bottom-1/5 -left-1 absolute bg-gradient-to-b from-primary-dark to-primary-light bg-clip-text text-transparent origin-top-left ">♥</div>
+      <div className="spades text-[200px] lg:text-[500px] -rotate-[25deg] top-1/12 right-1 absolute origin-top-left bg-gradient-to-l from-secondary-dark to-secondary-light bg-clip-text text-transparent">♣</div>
     </div>
   );
 }

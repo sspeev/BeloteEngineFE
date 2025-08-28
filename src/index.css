@@ -5,7 +5,11 @@
 @theme {
     --color-primary-light: #454545;
     --color-primary-dark: #1E1E1E;
-
     --color-secondary-light: #29de00;
     --color-secondary-dark: #003d1a;
+    --color-dirty-white: #d9d9d9;
+
+    --font-default: 'Poppins', sans-serif;
+
+    --shadow-default: 0px 4px 12px 0px rgba(0,0,0,0.20);
 }
