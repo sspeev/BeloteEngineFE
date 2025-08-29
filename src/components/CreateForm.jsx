@@ -14,7 +14,8 @@ export default function CreateForm({
     return (
         <section className="create-container 
         flex flex-col items-center justify-center h-screen">
-            <form onSubmit={handleCreateLobby} className="w-[200px] lg:w-[400px] p-3 flex flex-col bg-gradient-to-b from-secondary-light to-secondary-dark rounded-3xl">
+            <form onSubmit={handleCreateLobby} 
+            className="w-[200px] lg:w-[400px] p-3 flex flex-col bg-gradient-to-b from-secondary-light to-secondary-dark rounded-3xl">
 
                 <label className="text-primary-light text-xl font-semibold font-default">Player name</label>
                 <input className="pl-3 pr-3 pt-1 pb-1 lg:pl-5 lg:pr-5 lg:pt-3 lg:pb-3 bg-dirty-white rounded-2xl"
