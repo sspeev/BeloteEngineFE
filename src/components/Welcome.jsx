@@ -8,18 +8,20 @@ export default function Welcome({setView}) {
         ">
             <section className="flex flex-col gap-2 p-10 w-full text-center justify-start">
                 <section>
-                    <h1 className="main-heading text-[75px] text-white font-semibold font-default">
+                    <h1 className="main-heading text-[45px] lg:text-[75px] text-white font-semibold font-default">
                         Play <span className="inline-block bg-gradient-to-b from-secondary-dark to-secondary-light bg-clip-text text-transparent 
-                    text-[75px] font-semibold font-default"> Belote </span> online
+                    text-[45px] lg:text-[75px] font-semibold font-default"> Belote </span> online
                     </h1>
-                    <h1 className="main-heading text-[75px] text-white font-semibold font-default"> free with friends</h1>
+                    <h1 className="main-heading text-[45px] lg:text-[75px] text-white font-semibold font-default"> free with friends</h1>
                 </section>
-                <section className="buttons-section w-full flex flex-row items-center justify-center gap-10">
-                    <button onClick={() => setView('create')} className="cursor-pointer p-4 bg-gradient-to-bl from-secondary-light to-secondary-dark rounded-[40px] shadow-default">
-                        <p className="text-center text-white text-2xl font-semibold font-default">Create game</p>
+                <section className="button-wrapper">
+                    <button onClick={() => setView('create')} 
+                    className="p-2 bg-gradient-to-b from-secondary-light to-secondary-dark rounded-[40px] shadow-default">
+                        <p>Create game</p>
                     </button>
-                    <button onClick={() => setView('join')} className="cursor-pointer p-4 pl-10 pr-10 bg-gradient-to-b from-secondary-light/90 to-secondary-dark rounded-[40px] shadow-default">
-                        <p className="text-center text-white text-2xl font-semibold font-default">Join game</p>
+                    <button onClick={() => setView('join')} 
+                    className="p-2 bg-gradient-to-b from-secondary-light/90 to-secondary-dark rounded-[40px] shadow-default">
+                        <p>Join game</p>
                     </button>
                 </section>
             </section>

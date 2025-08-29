@@ -13,3 +13,34 @@
 
     --shadow-default: 0px 4px 12px 0px rgba(0,0,0,0.20);
 }
+
+@layer base {
+    form {
+        @apply w-[200px] lg:w-[400px] p-3 flex flex-col bg-gradient-to-b from-secondary-light to-secondary-dark rounded-3xl;
+    }
+    p {
+        @apply text-dirty-white text-xl font-semibold font-default;
+    }
+    input {
+        @apply pl-3 pr-3 pt-1 pb-1 lg:pl-5 lg:pr-5 lg:pt-3 lg:pb-3 bg-dirty-white rounded-2xl;
+    }
+    button {
+        @apply pt-1 pb-1 pr-3 pl-3 lg:pt-2 lg:pb-2 lg:pl-5 lg:pr-5 cursor-pointer bg-gradient-to-b from-primary-light to-primary-dark rounded-xl shadow-[inset_0px_4px_12px_0px_rgba(0,0,0,0.20)];
+    }
+    button p {
+        @apply text-white text-xs lg:text-xl font-semibold font-default;
+    }
+    label {
+        @apply text-primary-light text-xs lg:text-xl font-semibold font-default;
+    }
+}
+
+@layer components {
+    .error-container {
+        @apply w-[200px] lg:w-[400px] p-3 flex flex-col bg-gradient-to-b from-red-600 to-red-800 rounded-3xl;
+    }
+
+    .button-wrapper {
+        @apply flex flex-row justify-center gap-10 mt-2;
+    }
+}

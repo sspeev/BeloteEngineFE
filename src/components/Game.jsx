@@ -6,9 +6,6 @@ import BiddingPanel from './BiddingPanel';
 import PlayerList from './PlayerList';
 import ScoreBoard from './ScoreBoard';
 import GameLobby from './GameLobby';
-//import WaitingRoom from './WaitingRoom';
-import './Game.css';
-
 
 const Game = () => {
   const {
@@ -27,16 +24,16 @@ const Game = () => {
     }
   }, [gamePhase]);
 
-  
   const [showScoreboard, setShowScoreboard] = useState(false);
   const [hasJoinedLobby, setHasJoinedLobby] = useState(false);
 
   if (error) {
     return (
       <div className="error-container">
-        <h2>Error</h2>
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Retry</button>
+        <p>Unexpected error: {error}</p>
+        <button onClick={() => window.location.reload()}>
+          <p>Retry</p>
+        </button>
       </div>
     );
   }
@@ -44,10 +41,6 @@ const Game = () => {
   if (!hasJoinedLobby) {
     return <GameLobby setHasJoinedLobby={setHasJoinedLobby} />;
   }
-
-  // if (gamePhase === 'waiting') {
-  //   return <WaitingRoom />;
-  // }
 
   return (
     <div className="game-container">
