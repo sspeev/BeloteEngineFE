@@ -1,7 +1,6 @@
 import { useGame } from '../context/gameContext';
 
 export default function CreateForm({
-    handleCreateLobby,
     playerName,
     setPlayerName,
     lobbyName,
@@ -9,8 +8,21 @@ export default function CreateForm({
     setView
 }) {
     const {
+        createLobby,
         loading
     } = useGame();
+
+const handleCreateLobby = async (e) => {
+    e.preventDefault();
+
+    if (playerName.trim()) {
+      const result = await createLobby(playerName.trim(), lobbyName.trim() || null);
+      if (result) {
+        setView("waiting");
+      }
+    }
+  };
+
     return (
         <section className="create-container 
         flex flex-col items-center justify-center h-screen">

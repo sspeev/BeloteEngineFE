@@ -1,13 +1,31 @@
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { SplitText } from 'gsap/SplitText';
+import { useEffect, useState } from 'react';
 
 // Register plugins
 gsap.registerPlugin(SplitText);
 
 export default function Welcome({ setView }) {
+    const [fontsLoaded, setFontsLoaded] = useState(false);
+
+    // Check for font loading
+    useEffect(() => {
+        // Use document.fonts API if available (modern browsers)
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => {
+                setFontsLoaded(true);
+                console.log("Fonts are loaded!");
+            });
+        } else {
+            // Fallback for older browsers - wait a bit
+            setTimeout(() => setFontsLoaded(true), 1000);
+        }
+    }, []);
 
     useGSAP(() => {
+        if (!fontsLoaded) return; // Don't run animations until fonts are loaded
+
         // Split regular text
         const title = new SplitText(".main-heading", { type: "chars" });
 
@@ -40,7 +58,7 @@ export default function Welcome({ setView }) {
             ease: "expo.out",
             stagger: 0.05
         });
-    });
+    }, [fontsLoaded]); // Run when fonts are loaded
 
     return (
         <section className="welcome-container relative
@@ -58,11 +76,11 @@ export default function Welcome({ setView }) {
                 </section>
                 <section className="button-wrapper">
                     <button onClick={() => setView('create')}
-                        className="p-2 bg-gradient-to-b from-secondary-light to-secondary-dark rounded-[40px] shadow-default">
+                        className="bg-gradient-to-b from-secondary-light to-secondary-dark">
                         <p>Create game</p>
                     </button>
                     <button onClick={() => setView('join')}
-                        className="p-2 bg-gradient-to-b from-secondary-light/90 to-secondary-dark rounded-[40px] shadow-default">
+                        className="bg-gradient-to-b from-secondary-light to-secondary-dark">
                         <p>Join game</p>
                     </button>
                 </section>

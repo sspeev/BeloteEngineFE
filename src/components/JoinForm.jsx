@@ -1,19 +1,38 @@
 import { useEffect } from "react";
+import { useGame } from "../context/gameContext";
 
 const JoinForm = ({
-    handleJoinLobby,
     playerName,
     setPlayerName,
     selectedLobbyId,
     setSelectedLobbyId,
-    availableLobbies,
-    refreshLobbies,
     setView
 }) => {
+
+    const {
+        getAvailableLobbies,
+        availableLobbies,
+        joinLobby
+    } = useGame();
 
     useEffect(() => {
         refreshLobbies();
     }, []);
+
+    const handleJoinLobby = async (e) => {
+        e.preventDefault();
+
+        if (playerName.trim() && selectedLobbyId) {
+            const result = await joinLobby(playerName.trim(), selectedLobbyId);
+            if (result) {
+                setView("waiting");
+            }
+        }
+    };
+
+    const refreshLobbies = () => {
+        getAvailableLobbies();
+    };
 
     return (
         <section className="join-container flex flex-col items-center justify-center h-screen">
