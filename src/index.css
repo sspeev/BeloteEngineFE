@@ -19,13 +19,13 @@
         @apply w-[200px] lg:w-[400px] p-3 flex flex-col bg-gradient-to-b from-secondary-light to-secondary-dark rounded-3xl;
     }
     p {
-        @apply text-dirty-white text-xl font-semibold font-default;
+        @apply text-dirty-white text-2xl lg:text-5xl font-semibold font-default;
     }
     input {
         @apply pl-3 pr-3 pt-1 pb-1 lg:pl-5 lg:pr-5 lg:pt-3 lg:pb-3 bg-dirty-white rounded-2xl;
     }
     button {
-        @apply pt-1 pb-1 pr-3 pl-3 lg:pt-2 lg:pb-2 lg:pl-5 lg:pr-5 cursor-pointer bg-gradient-to-b from-primary-light to-primary-dark rounded-4xl shadow-[inset_0px_4px_12px_0px_rgba(0,0,0,0.20)];
+        @apply w-[105px] lg:w-[180px] pt-2 pb-2 pr-3 pl-3 lg:pl-5 lg:pr-5 cursor-pointer bg-gradient-to-b from-primary-light to-primary-dark rounded-4xl shadow-[inset_0px_4px_12px_0px_rgba(0,0,0,0.20)];
     }
     button p {
         @apply text-white text-xs lg:text-xl font-semibold font-default;
@@ -41,7 +41,7 @@
     }
 
     .button-wrapper {
-        @apply flex flex-col lg:flex-row justify-center gap-10 mt-2;
+        @apply flex flex-row justify-center items-center gap-10 mt-2;
     }
 }
 

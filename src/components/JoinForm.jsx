@@ -56,7 +56,7 @@ const JoinForm = ({
                     </button>
                 </section>
                 {availableLobbies?.length === 0 ? (
-                    <p className="mt-5 text-center">No available lobbies. Create one instead or refresh!</p>
+                    <p className="mt-5 text-sm lg:text-xl text-center">No available lobbies. Create one instead or refresh!</p>
                 ) : (
                     <div className="lobbies-list flex flex-row flex-wrap justify-center gap-4 max-h-[300px] overflow-y-auto">
                         <p className=" text-center text-primary-dark text-xl mt-5 font-semibold font-default">Available Lobbies:</p>

@@ -20,7 +20,7 @@ const Waiting = () => {
                         </button>
 
                         <button>
-                            <p className="text-[#ffee00]">Start</p> 
+                            <p className="text-[#ffee00]">Start</p>
                         </button>
                     </div>
                 </div>

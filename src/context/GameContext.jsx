@@ -14,7 +14,8 @@ const initialState = {
   availableLobbies: [],
   loading: false,
   error: null,
-  connectionStatus: 'disconnected'
+  connectionStatus: 'disconnected',
+  isHost: false // Track if current player is the host
 };
 
 function gameReducer(state, action) {
@@ -84,6 +85,8 @@ function gameReducer(state, action) {
 
     case 'CLEAR_LOBBY':
       return { ...initialState };
+    case 'SET_IS_HOST':
+      return { ...state, isHost: action.payload };
 
     default:
       return state;
@@ -171,6 +174,7 @@ export function GameProvider({ children }) {
       dispatch({ type: 'SET_LOBBY_ID', payload: lobby.id });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
       dispatch({ type: 'SET_LOBBY_NAME', payload: lobby.name || lobbyName || `Lobby ${lobby.id}` });
+      dispatch({ type: 'SET_IS_HOST', payload: true }); // Mark as host when creating
       if (lobby.connectedPlayers) {
         dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: lobby.connectedPlayers });
       }
@@ -261,7 +265,7 @@ export function GameProvider({ children }) {
     ...state,
     connectedPlayers: state.connectedPlayers,
     playersCount: state.connectedPlayers.length,
-    //gamePhase: state.connectedPlayers.length > 0 ? 'bidding' : 'waiting',
+    gamePhase: state.connectedPlayers.length == 4 ? 'bidding' : 'waiting',
     createLobby,
     joinLobby,
     startGame,

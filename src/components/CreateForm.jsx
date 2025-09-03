@@ -43,7 +43,7 @@ const handleCreateLobby = async (e) => {
                 </div>
                 <section className="button-wrapper">
                     <button type="submit" disabled={loading}>
-                        <p>Create game</p>
+                        <p>Create</p>
                     </button>
                     <button onClick={() => setView('main')}>
                         <p>Back</p>

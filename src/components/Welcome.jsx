@@ -27,7 +27,7 @@ export default function Welcome({ setView }) {
         if (!fontsLoaded) return; // Don't run animations until fonts are loaded
 
         // Split regular text
-        const title = new SplitText(".main-heading", { type: "chars" });
+        //const title = new SplitText(".main-heading", { type: "chars" });
 
         // Split and handle gradient text separately
         const belote = new SplitText(".belote", { type: "chars" });
@@ -44,12 +44,12 @@ export default function Welcome({ setView }) {
         });
 
         // Animate regular text
-        gsap.from(title.chars, {
-            yPercent: 100,
-            duration: 1.8,
-            ease: "expo.out",
-            stagger: 0.05
-        });
+        // gsap.from(title.chars, {
+        //     yPercent: 100,
+        //     duration: 1.8,
+        //     ease: "expo.out",
+        //     stagger: 0.05
+        // });
 
         // Animate gradient text
         gsap.from(belote.chars, {
@@ -88,7 +88,7 @@ export default function Welcome({ setView }) {
 
             <section className="green-container flex flex-row gap-10
             w-full h-full bg-gradient-to-br from-secondary-light to-secondary-dark p-20">
-                <p className="text-center justify-center text-white text-[41px] font-semibold font-default leading-[45px]">
+                <p className="text-center justify-center text-white font-semibold font-default leading-[45px]">
                     Az shte sum konkurentsiq na Belot.bg. Ako ne vi se davat pari i vi se
                     tsuka s priqteli ste na pravilnoto mqsto! Are mazna i priqtna igra!
                 </p>
