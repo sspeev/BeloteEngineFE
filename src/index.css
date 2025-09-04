@@ -8,6 +8,7 @@
     --color-secondary-light: #29de00;
     --color-secondary-dark: #003d1a;
     --color-dirty-white: #d9d9d9;
+    --color-contrast: var(--color-yellow-400);
 
     --font-default: 'Poppins', sans-serif;
 

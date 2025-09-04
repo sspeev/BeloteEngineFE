@@ -15,7 +15,7 @@ const initialState = {
   loading: false,
   error: null,
   connectionStatus: 'disconnected',
-  isHost: false // Track if current player is the host
+  isHost: false
 };
 
 function gameReducer(state, action) {
@@ -174,7 +174,7 @@ export function GameProvider({ children }) {
       dispatch({ type: 'SET_LOBBY_ID', payload: lobby.id });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
       dispatch({ type: 'SET_LOBBY_NAME', payload: lobby.name || lobbyName || `Lobby ${lobby.id}` });
-      dispatch({ type: 'SET_IS_HOST', payload: true }); // Mark as host when creating
+      dispatch({ type: 'SET_IS_HOST', payload: true });
       if (lobby.connectedPlayers) {
         dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: lobby.connectedPlayers });
       }
@@ -193,17 +193,14 @@ export function GameProvider({ children }) {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      // Get lobby list if needed
       if (!state.availableLobbies.length) {
         const list = await apiService.getAvailableLobbies();
         dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
       }
 
-      // Join via HTTP API first
       const { lobby, errorMessage } = await apiService.joinLobby(playerName, lobbyId);
       if (errorMessage) throw new Error(errorMessage);
 
-      // Update state with initial values
       dispatch({ type: 'SET_LOBBY_ID', payload: lobbyId });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
       dispatch({ type: 'SET_LOBBY_NAME', payload: lobby?.name });

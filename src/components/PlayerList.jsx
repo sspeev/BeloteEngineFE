@@ -1,15 +1,12 @@
-import React from 'react';
 import { useGame } from '../context/gameContext';
-import './PlayerList.css';
 
 function PlayerList() {
-  const { 
-    connectedPlayers, 
-    gameState, 
-    playerName, 
-    currentPlayer, 
-    lobbyId, 
-    leaveLobby 
+  const {
+    connectedPlayers,
+    gameState,
+    playerName,
+    currentPlayer,
+    lobbyId
   } = useGame();
 
   const getPlayerStatus = (player) => {
@@ -34,25 +31,10 @@ function PlayerList() {
     return 'connected';
   };
 
-  const handleLeaveLobby = () => {
-    if (window.confirm('Are you sure you want to leave this lobby?')) {
-      leaveLobby();
-    }
-  };
-
   return (
-    <div className="player-list">
-      <div className="player-list-header">
-        <h3>Players ({connectedPlayers?.length || 0}/4)</h3>
-        <div className="lobby-info">
-          <p>Lobby: {lobbyId}</p>
-          <button className="leave-lobby-btn" onClick={handleLeaveLobby}>
-            Leave Lobby
-          </button>
-        </div>
-      </div>
+    <div className="bg-secondary-dark rounded-xl p-6 text-dirty-white">
 
-      <div className="players-container">
+      <div className="flex flex-col lg:flex-row gap-4 w-full">
         {connectedPlayers?.map((player, index) => {
           const status = getPlayerStatus(player);
           const connectionStatus = getConnectionStatus(player);
@@ -61,82 +43,59 @@ function PlayerList() {
           return (
             <div
               key={player.id}
-              className={`player-card ${status} ${connectionStatus}`}
+              className={
+                `player-box rounded-lg p-4 border-2 w-50
+                ${status === 'current-turn' ? 'border-secondary-light bg-secondary-dark' : ''}
+                ${status === 'you' ? 'border-contrast bg-contrast/10' : ''}
+                ${connectionStatus === 'disconnected' ? 'opacity-60 bg-red-500/10' : 'bg-white/10'}
+                ${status === 'waiting' ? 'border-transparent' : ''}
+                `
+              }
             >
-              <div className="player-info">
-                <div className="player-name">
+              <div className="mb-4">
+                <div className="flex items-center gap-2 font-bold text-lg">
                   {player.name}
-                  {player.name === playerName && <span className="you-indicator">(You)</span>}
-                </div>
-
-                <div className="player-details">
-                  <div className="team-info">{team}</div>
-                  <div className="player-position">Position {index + 1}</div>
-                </div>
-
-                <div className="player-stats">
-                  {gameState?.scores && (
-                    <div className="score">
-                      Score: {gameState.scores[player.id] || 0}
-                    </div>
+                  {player.name === playerName && (
+                    <span className="bg-contrast text-black px-2 py-0.5 rounded-full text-xs font-semibold">You</span>
                   )}
-
-                  {gameState?.tricksWon && (
-                    <div className="tricks">
-                      Tricks: {gameState.tricksWon[player.id] || 0}
-                    </div>
-                  )}
+                </div>
+                <div className="flex justify-between text-sm text-white/70 mb-2">
+                  <div>{team}</div>
+                  <div>Position {index + 1}</div>
                 </div>
               </div>
 
-              <div className="player-status-indicators">
-                <div className={`connection-indicator ${connectionStatus}`}>
-                  <span className="status-dot"></span>
+              <div className="flex justify-between items-center text-xs">
+                <div className="flex items-center gap-2">
+                  <span className={
+                    `inline-block w-2 h-2 rounded-full
+                    ${connectionStatus === 'connected' ? 'bg-green-500' : ''}
+                    ${connectionStatus === 'unstable' ? 'bg-orange-400' : ''}
+                    ${connectionStatus === 'disconnected' ? 'bg-red-600' : ''}`
+                  }></span>
                   {connectionStatus === 'connected' ? 'Online' :
                     connectionStatus === 'unstable' ? 'Unstable' : 'Offline'}
                 </div>
-
                 {status === 'current-turn' && (
-                  <div className="turn-indicator">
-                    <span className="turn-arrow">→</span>
-                    Turn
+                  <div className="flex items-center gap-1 text-green-500 font-bold animate-bounce">
+                    <span>→</span>Turn
                   </div>
                 )}
-
                 {player.isReady && gameState?.phase === 'waiting' && (
-                  <div className="ready-indicator">
-                    ✓ Ready
-                  </div>
+                  <div className="text-green-500 font-semibold">✓ Ready</div>
                 )}
               </div>
-
-              {gameState?.currentContract?.playerId === player.id && (
-                <div className="contract-holder">
-                  Contract Holder
-                </div>
-              )}
             </div>
           );
         })}
 
         {Array.from({ length: 4 - (connectedPlayers?.length || 0) }).map((_, index) => (
-          <div key={`empty-${index}`} className="player-card empty">
-            <div className="waiting-player">
-              <div className="empty-slot-icon">👤</div>
-              <div className="waiting-text">Waiting for player...</div>
-            </div>
+          <div key={`empty-${index}`} className="rounded-lg border-2 border-dashed border-white/30 bg-white/5 p-4 flex flex-col items-center opacity-60">
+            <div className="text-3xl mb-2">👤</div>
+            <div className="text-sm">Waiting for player...</div>
           </div>
         ))}
       </div>
-
-      {gameState?.phase === 'waiting' && connectedPlayers?.length < 4 && (
-        <div className="game-not-ready">
-          <p>Waiting for {4 - (connectedPlayers?.length || 0)} more player(s) to join...</p>
-          <div className="lobby-id-share">
-            <p>Share Lobby ID: <strong>{lobbyId}</strong></p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

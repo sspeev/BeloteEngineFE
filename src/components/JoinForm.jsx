@@ -36,11 +36,12 @@ const JoinForm = ({
 
     return (
         <section className="join-container flex flex-col items-center justify-center h-screen">
-            <form onSubmit={handleJoinLobby}>
+            <form onSubmit={handleJoinLobby} name="joinLobbyForm">
                 <div className="flex flex-col gap-1">
-                    <label>Player name</label>
+                    <label htmlFor="playerName">Player name</label>
                     <input
                         type="text"
+                        id="playerName"
                         placeholder="Enter your name"
                         value={playerName}
                         onChange={(e) => setPlayerName(e.target.value)}
