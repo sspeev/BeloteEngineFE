@@ -243,7 +243,7 @@ export function GameProvider({ children }) {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      const { success } = await apiService.leaveLobby(playerName, lobbyId);
+      const { success, isHosterHere } = await apiService.leaveLobby(playerName, lobbyId);
       if (!success) throw new Error('Failed to leave lobby');
       await signalRService.disconnect();
     } catch (e) {

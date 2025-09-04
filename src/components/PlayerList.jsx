@@ -9,8 +9,6 @@ function PlayerList() {
     lobbyId
   } = useGame();
 
-  // Add this to handle empty or undefined connectedPlayers
-  const players = Array.isArray(connectedPlayers) ? connectedPlayers : [];
 
   const getPlayerStatus = (player) => {
     if (player.id === currentPlayer) return 'current-turn';
@@ -19,10 +17,10 @@ function PlayerList() {
     return 'waiting';
   };
 
-  const getPlayerTeam = (playerId) => {
-    const playerIndex = connectedPlayers?.findIndex(p => p.id === playerId);
-    return playerIndex % 2 === 0 ? 'Team A' : 'Team B';
-  };
+  // const getPlayerTeam = (playerId) => {
+  //   const playerIndex = connectedPlayers?.findIndex(p => p.id === playerId);
+  //   return playerIndex % 2 === 0 ? 'Team A' : 'Team B';
+  // };
 
   const getConnectionStatus = (player) => {
     const lastSeen = new Date(player.lastSeen);
@@ -37,14 +35,14 @@ function PlayerList() {
   return (
     <div className="bg-black/80 rounded-xl p-6 text-white w-full max-w-md mx-auto">
       <div className="text-center mb-6 border-b border-white/20 pb-4">
-        <h3 className="text-xl font-bold">Players ({players.length || 0}/4)</h3>
+        <h3 className="text-xl font-bold">Players ({connectedPlayers.length || 0}/4)</h3>
       </div>
 
       <div className="flex flex-col gap-4">
-        {players.map((player, index) => {
+        {connectedPlayers.map((player, index) => {
           const status = getPlayerStatus(player);
           const connectionStatus = getConnectionStatus(player);
-          const team = getPlayerTeam(player.id);
+          // const team = getPlayerTeam(player.id);
 
           return (
             <div
@@ -66,7 +64,7 @@ function PlayerList() {
                   )}
                 </div>
                 <div className="flex justify-between text-sm text-white/70 mb-2">
-                  <div>{team}</div>
+                  {/* <div>{team}</div> */}
                   <div>Position {index + 1}</div>
                 </div>
               </div>
@@ -95,7 +93,7 @@ function PlayerList() {
           );
         })}
 
-        {Array.from({ length: 4 - players.length }).map((_, index) => (
+        {Array.from({ length: 4 - connectedPlayers.length }).map((_, index) => (
           <div key={`empty-${index}`} className="rounded-lg border-2 border-dashed border-white/30 bg-white/5 p-4 flex flex-col items-center opacity-60">
             <div className="text-3xl mb-2">👤</div>
             <div className="text-sm">Waiting for player...</div>

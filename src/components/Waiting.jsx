@@ -1,11 +1,10 @@
 import { useGame } from "../context/gameContext";
 import PlayerList from "./PlayerList";
 
-const Waiting = () => {
+const Waiting = ({ setView }) => {
     const {
         leaveLobby,
         startGame,
-        setView,
         gamephase,
         lobbyId,
         lobbyName,
@@ -13,9 +12,7 @@ const Waiting = () => {
         isHost
     } = useGame();
 
-    const handleLeaveLobby = async (e) => {
-        e.preventDefault();
-
+    const handleLeaveLobby = async () => {
         if (playerName.trim()) {
             const result = await leaveLobby(playerName.trim(), lobbyId);
             if (result) {

@@ -40,7 +40,7 @@ const GameLobby = () => {
       )}
 
       {view === 'waiting' && (
-        <Waiting />
+        <Waiting setView={setView} />
       )}
 
       <div className="hearts text-[200px] lg:text-[500px] rotate-[25deg] bottom-1/5 -left-1 absolute bg-gradient-to-b from-primary-dark to-primary-light bg-clip-text text-transparent origin-top-left ">♥</div>
