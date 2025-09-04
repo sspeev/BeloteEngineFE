@@ -52,7 +52,6 @@ class ApiService {
         }
     }
 
-    // Multiple lobby methods
     async createLobby(playerName, lobbyName) {
         return this.request('/Lobby/create', {
             method: 'POST',
@@ -100,9 +99,9 @@ class ApiService {
     }
 
     async leaveLobby(playerName, lobbyId) {
-        return this.request(`/Lobby/${lobbyId}/leave`, {
+        return this.request(`/Lobby/leave`, {
             method: 'POST',
-            body: JSON.stringify({ playerName }),
+            body: JSON.stringify({ playerName, lobbyId }),
         });
     }
 

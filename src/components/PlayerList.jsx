@@ -9,6 +9,9 @@ function PlayerList() {
     lobbyId
   } = useGame();
 
+  // Add this to handle empty or undefined connectedPlayers
+  const players = Array.isArray(connectedPlayers) ? connectedPlayers : [];
+
   const getPlayerStatus = (player) => {
     if (player.id === currentPlayer) return 'current-turn';
     if (player.name === playerName) return 'you';
@@ -32,10 +35,13 @@ function PlayerList() {
   };
 
   return (
-    <div className="bg-secondary-dark rounded-xl p-6 text-dirty-white">
+    <div className="bg-black/80 rounded-xl p-6 text-white w-full max-w-md mx-auto">
+      <div className="text-center mb-6 border-b border-white/20 pb-4">
+        <h3 className="text-xl font-bold">Players ({players.length || 0}/4)</h3>
+      </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 w-full">
-        {connectedPlayers?.map((player, index) => {
+      <div className="flex flex-col gap-4">
+        {players.map((player, index) => {
           const status = getPlayerStatus(player);
           const connectionStatus = getConnectionStatus(player);
           const team = getPlayerTeam(player.id);
@@ -89,7 +95,7 @@ function PlayerList() {
           );
         })}
 
-        {Array.from({ length: 4 - (connectedPlayers?.length || 0) }).map((_, index) => (
+        {Array.from({ length: 4 - players.length }).map((_, index) => (
           <div key={`empty-${index}`} className="rounded-lg border-2 border-dashed border-white/30 bg-white/5 p-4 flex flex-col items-center opacity-60">
             <div className="text-3xl mb-2">👤</div>
             <div className="text-sm">Waiting for player...</div>

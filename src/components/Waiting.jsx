@@ -3,9 +3,13 @@ import PlayerList from "./PlayerList";
 
 const Waiting = () => {
     const {
-        gamephase,
-        lobbyName,
         leaveLobby,
+        startGame,
+        setView,
+        gamephase,
+        lobbyId,
+        lobbyName,
+        playerName,
         isHost
     } = useGame();
 
@@ -13,7 +17,7 @@ const Waiting = () => {
         e.preventDefault();
 
         if (playerName.trim()) {
-            const result = await leaveLobby(playerName.trim(), lobbyName.trim() || null);
+            const result = await leaveLobby(playerName.trim(), lobbyId);
             if (result) {
                 setView("main");
             }
@@ -33,7 +37,7 @@ const Waiting = () => {
                         <p className="text-white text-xl font-semibold font-default">{gamephase}</p>
                     </div>
                     <div className="button-wrapper">
-                        <button onClick={handleLeaveLobby} className="w-25">
+                        <button onClick={() => { handleLeaveLobby(); setView("main"); }} className="w-25">
                             <p>Leave</p>
                         </button>
                         {isHost && (
@@ -49,6 +53,9 @@ const Waiting = () => {
                 </div>
             </header>
             <PlayerList />
+            <section>
+                If the host player leaves, the other players will be returned to the main menu.
+            </section>
         </main>
     );
 }

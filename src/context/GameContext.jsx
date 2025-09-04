@@ -238,6 +238,21 @@ export function GameProvider({ children }) {
     }
   };
 
+  const leaveLobby = async (playerName, lobbyId) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      dispatch({ type: 'SET_ERROR', payload: null });
+
+      const { success } = await apiService.leaveLobby(playerName, lobbyId);
+      if (!success) throw new Error('Failed to leave lobby');
+      await signalRService.disconnect();
+    } catch (e) {
+      dispatch({ type: 'SET_ERROR', payload: e.message });
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return false;
+    }
+  };
+
   const getAvailableLobbies = async () => {
     const list = await apiService.getAvailableLobbies();
     dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
@@ -265,6 +280,7 @@ export function GameProvider({ children }) {
     gamePhase: state.connectedPlayers.length == 4 ? 'bidding' : 'waiting',
     createLobby,
     joinLobby,
+    leaveLobby,
     startGame,
     getAvailableLobbies,
     dispatch
