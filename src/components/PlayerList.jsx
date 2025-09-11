@@ -4,10 +4,8 @@ import { useEffect } from 'react';
 function PlayerList() {
   const {
     connectedPlayers,
-    gameState,
     playerName,
-    currentPlayer,
-    lobbyId
+    currentPlayer
   } = useGame();
 
   // Debug connected players changes
