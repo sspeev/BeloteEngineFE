@@ -216,10 +216,7 @@ export function GameProvider({ children }) {
         await signalRService.connect(lobbyId, playerName);
         dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
 
-        // The connection is now guaranteed to be ready for invocations
-        console.log('SignalR ready, invoking JoinLobby...');
         await signalRService.invoke('JoinLobby', lobbyId, playerName);
-        console.log('JoinLobby invocation complete');
 
       } catch (connError) {
         console.error('SignalR connection/join failed:', connError);
@@ -243,9 +240,34 @@ export function GameProvider({ children }) {
       dispatch({ type: 'SET_LOADING', payload: true });
       dispatch({ type: 'SET_ERROR', payload: null });
 
-      const { success, isHosterHere } = await apiService.leaveLobby(playerName, lobbyId);
+      const { success } = await apiService.leaveLobby(playerName, lobbyId);
       if (!success) throw new Error('Failed to leave lobby');
-      await signalRService.disconnect();
+
+      const { lobby } = await apiService.getLobbyState(lobbyId);
+      if (!lobby) throw new Error('Lobby not found');
+
+      if (lobby?.connectedPlayers) {
+        dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: lobby.connectedPlayers });
+      }
+
+      try {
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'disconnecting' });
+        await signalRService.invoke('LeaveLobby', lobbyId, playerName);
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'disconnected' });
+
+      } catch (connError) {
+        console.error('SignalR connection/leave failed:', connError);
+        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
+        dispatch({ type: 'SET_ERROR', payload: `SignalR error: ${connError.message}` });
+      }
+
+      await fetchInitialState(lobbyId);
+      // if (!isHosterHere) {
+      //   dispatch({ type: 'CLEAR_LOBBY' });
+      // }
+
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return lobby;
     } catch (e) {
       dispatch({ type: 'SET_ERROR', payload: e.message });
       dispatch({ type: 'SET_LOADING', payload: false });
