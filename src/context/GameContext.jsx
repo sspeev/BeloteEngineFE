@@ -115,7 +115,7 @@ export function GameProvider({ children }) {
     const onGameState = (gs) => {
       dispatch({ type: 'SET_GAME_STATE', payload: gs });
     };
-    const onGameStarted = () => {
+    const onGameStarted = (gameData) => {
       console.log(`[${state.playerName}] EVENT: Game started with data:`, gameData);
       dispatch({ type: 'SET_PHASE', payload: 'bidding' });
       if (gameData) {

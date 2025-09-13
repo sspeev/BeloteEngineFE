@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGame } from '../context/gameContext';
+import { useGame } from '../context/GameContext';
 import './ScoreBoard.css';
 
 function ScoreBoard() {
