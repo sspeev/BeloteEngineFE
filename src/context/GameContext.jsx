@@ -69,11 +69,11 @@ function gameReducer(state, action) {
       };
     }
     case 'PLAYER_LEFT': {
-      const id = action.payload?.playerId || action.payload?.id;
-      if (!id) return state;
+      const name = action.payload?.playerName;
+      if (!name) return state;
       return {
         ...state,
-        connectedPlayers: state.connectedPlayers.filter(p => p.id !== id)
+        connectedPlayers: state.connectedPlayers.filter(p => p.name !== name)
       };
     }
 
