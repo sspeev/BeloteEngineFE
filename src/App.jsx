@@ -1,5 +1,5 @@
-import { GameProvider } from './context/GameContext.jsx';
-import Game from './components/Game.jsx';
+import { GameProvider } from './context/gameContext';
+import Game from './components/Game';
 
 const App = () => {
   return (
