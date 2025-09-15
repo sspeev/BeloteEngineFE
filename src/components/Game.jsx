@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useGame } from '../context/GameContext';
+import { useGame } from '../context/gameContext';
 import GameLobby from './GameLobby';
 
 const Game = () => {
