@@ -69,11 +69,11 @@ function gameReducer(state, action) {
       };
     }
     case 'PLAYER_LEFT': {
-      const id = action.payload?.playerId || action.payload?.id;
-      if (!id) return state;
+      const name = action.payload?.playerName;
+      if (!name) return state;
       return {
         ...state,
-        connectedPlayers: state.connectedPlayers.filter(p => p.id !== id)
+        connectedPlayers: state.connectedPlayers.filter(p => p.name !== name)
       };
     }
 
@@ -115,7 +115,7 @@ export function GameProvider({ children }) {
     const onGameState = (gs) => {
       dispatch({ type: 'SET_GAME_STATE', payload: gs });
     };
-    const onGameStarted = () => {
+    const onGameStarted = (gameData) => {
       console.log(`[${state.playerName}] EVENT: Game started with data:`, gameData);
       dispatch({ type: 'SET_PHASE', payload: 'bidding' });
       if (gameData) {
