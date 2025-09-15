@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGame } from '../context/gameContext';
+import { useGame } from '../context/GameContext';
 import Card from './Card';
 
 function PlayerHand() {

@@ -1,4 +1,4 @@
-import { useGame } from '../context/gameContext';
+import { useGame } from '../context/GameContext';
 import { useEffect } from 'react';
 
 function PlayerList() {

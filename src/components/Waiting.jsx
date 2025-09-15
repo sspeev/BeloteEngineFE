@@ -1,4 +1,4 @@
-import { useGame } from "../context/gameContext";
+import { useGame } from "../context/GameContext";
 import PlayerList from "./PlayerList";
 
 const Waiting = ({ setView }) => {
