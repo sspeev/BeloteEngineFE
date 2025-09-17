@@ -9,7 +9,8 @@ const Waiting = ({ setView }) => {
         lobbyId,
         lobbyName,
         playerName,
-        isHost
+        isHost,
+        connectedPlayers
     } = useGame();
 
     const handleLeaveLobby = async () => {
@@ -38,7 +39,9 @@ const Waiting = ({ setView }) => {
                             <p>Leave</p>
                         </button>
                         {isHost && (
-                            <button className="w-25" onClick={handleStartGame}>
+                            <button className="w-25 disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed" 
+                            onClick={() => { handleStartGame(); setView("playing"); }}
+                            disabled={connectedPlayers.length < 4}>
                                 <p className="text-contrast">Start</p>
                             </button>
                         )}

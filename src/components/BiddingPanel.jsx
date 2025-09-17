@@ -3,7 +3,12 @@ import { useGame } from '../context/GameContext';
 import './BiddingPanel.css';
 
 function BiddingPanel() {
-  const { makeBid, gameState, playerId, currentPlayer } = useGame();
+  const { 
+    makeBid, 
+    gameState, 
+    playerId, 
+    currentPlayer 
+  } = useGame();
   const [selectedSuit, setSelectedSuit] = useState('');
   const [selectedValue, setSelectedValue] = useState('');
 
