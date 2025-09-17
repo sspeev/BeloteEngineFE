@@ -29,11 +29,10 @@ function PlayerList() {
         {Array.from({ length: 4 }).map((_, index) => {
           const player = connectedPlayers[index];
 
-          // If we have a player for this slot, show player info
           if (player) {
             return (
               <section
-                key={player.name || player.id || `player-${index}`}
+                key={player.name || `player-${index}`}
                 className={`w-50 h-sm rounded-lg p-4 ${player.name === playerName ? 'bg-yellow-500/10 border-2 border-yellow-500' : 'bg-white/10'}`}
               >
                 <h5 className="text-xl font-bold">{player.name}</h5>

@@ -3,13 +3,13 @@ import Welcome from './Welcome';
 import CreateForm from './CreateForm';
 import JoinForm from './JoinForm';
 import Waiting from './Waiting';
+import Board from './Board';
 
 const GameLobby = () => {
 
   const [playerName, setPlayerName] = useState('');
   const [lobbyName, setLobbyName] = useState('');
   const [selectedLobbyId, setSelectedLobbyId] = useState('');
-  //const [hasJoinedLobby, setHasJoinedLobby] = useState(false);
   const [view, setView] = useState('main');
 
   return (
@@ -41,6 +41,10 @@ const GameLobby = () => {
 
       {view === 'waiting' && (
         <Waiting setView={setView} />
+      )}
+
+      {view === 'playing' && (
+        <Board />
       )}
 
       <div className="hearts text-[200px] lg:text-[500px] rotate-[25deg] bottom-1/5 -left-1 absolute bg-gradient-to-b from-primary-dark to-primary-light bg-clip-text text-transparent origin-top-left ">♥</div>

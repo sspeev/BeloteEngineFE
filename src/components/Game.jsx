@@ -1,21 +1,11 @@
-import { useEffect } from 'react';
+
 import { useGame } from '../context/GameContext';
 import GameLobby from './GameLobby';
 
 const Game = () => {
   const {
-    gamePhase,
-    error,
-    startGame
+    error
   } = useGame();
-
-  useEffect(() => {
-    if (gamePhase === 'bidding') {
-      startGame();
-    }
-  }, [gamePhase]);
-
-  //const [showScoreboard, setShowScoreboard] = useState(false);
 
   if (error) {
     return (

@@ -85,14 +85,14 @@ class ApiService {
     }
 
     async playCard(playerName, cardId, lobbyId) {
-        return this.request(`/Lobby/${lobbyId}/play`, {
+        return this.request(`/${lobbyId}/play`, {
             method: 'POST',
             body: JSON.stringify({ playerName, cardId }),
         });
     }
 
     async makeBid(playerName, bid, lobbyId) {
-        return this.request(`/Lobby/${lobbyId}/bid`, {
+        return this.request(`/${lobbyId}/bid`, {
             method: 'POST',
             body: JSON.stringify({ playerName, bid }),
         });
@@ -106,8 +106,8 @@ class ApiService {
     }
 
     async startGame(lobbyId) {
-        return this.request(`/Lobby/${lobbyId}/start`, {
-            method: 'POST'
+        return this.request(`/${lobbyId}/start`, {
+            method: 'GET'
         });
     }
 

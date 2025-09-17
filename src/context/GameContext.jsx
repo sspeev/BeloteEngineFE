@@ -36,14 +36,19 @@ function gameReducer(state, action) {
       console.log('Updating game phase from', state.gamePhase, 'to', action.payload);
       return { ...state, gamePhase: action.payload };
     case 'SET_GAME_STATE': {
-      const { lobby } = action.payload || {};
+      const lobby = action.payload?.lobby || action.payload;
+      const players = lobby?.connectedPlayers;
+
       console.log('Game state update received:', lobby);
-      return {
-        ...state,
-        gamePhase: state.gamePhase,
-        connectedPlayers: lobby.connectedPlayers,
-        currentPlayer: state.currentPlayer
-      };
+
+      // Only update if we have a valid players array
+      if (Array.isArray(players)) {
+        return {
+          ...state,
+          connectedPlayers: players,
+        };
+      }
+      return state;
     }
     case 'SET_CURRENT_PLAYER':
       return { ...state, currentPlayer: action.payload };
@@ -299,7 +304,7 @@ export function GameProvider({ children }) {
     ...state,
     connectedPlayers: state.connectedPlayers,
     playersCount: state.connectedPlayers.length,
-    gamePhase: state.connectedPlayers.length == 4 ? 'bidding' : 'waiting',
+    gamePhase: state.gamePhase,
     createLobby,
     joinLobby,
     leaveLobby,
