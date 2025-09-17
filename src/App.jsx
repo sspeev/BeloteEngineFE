@@ -4,7 +4,7 @@ import Game from './components/Game.jsx';
 const App = () => {
   return (
     <GameProvider>
-      <div className="App h-screen bg-gradient-to-l from-primary-dark to-primary-light">
+      <div className="App h-full bg-gradient-to-l from-primary-dark to-primary-light">
         <h3 className="text-left justify-start text-white text-xl font-semibold font-default leading-[45px]">ALFA 0.0.4</h3>
         <Game />
         <footer>

@@ -58,7 +58,7 @@ function BiddingPanel() {
   };
 
   return (
-    <div className="bidding-panel">
+    <div className="bidding-panel absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
       <div className="bidding-header">
         <h3>Bidding Phase</h3>
         {!isMyTurn && (
