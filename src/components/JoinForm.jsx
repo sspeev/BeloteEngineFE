@@ -22,8 +22,8 @@ const JoinForm = ({
     const handleJoinLobby = async (e) => {
         e.preventDefault();
 
-        if (playerName.trim() && selectedLobbyId) {
-            const result = await joinLobby(playerName.trim(), selectedLobbyId);
+        if (selectedLobbyId && playerName.trim() !== "") {
+            const result = await joinLobby(playerName, selectedLobbyId);
             if (result) {
                 setView("waiting");
             }

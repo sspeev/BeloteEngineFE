@@ -5,17 +5,13 @@ import signalRService from '../services/signalRService';
 const GameContext = createContext(null);
 
 const initialState = {
-  lobbyId: null,
-  lobbyName: '',
+  lobby: null,
   playerName: '',
-  connectedPlayers: [],
-  gamePhase: 'waiting',
   currentPlayer: null,
   availableLobbies: [],
   loading: false,
   error: null,
-  connectionStatus: 'disconnected',
-  isHost: false
+  connectionStatus: 'disconnected'
 };
 
 function gameReducer(state, action) {
@@ -28,71 +24,14 @@ function gameReducer(state, action) {
       return { ...state, connectionStatus: action.payload };
     case 'SET_PLAYER_NAME':
       return { ...state, playerName: action.payload };
-    case 'SET_LOBBY_ID':
-      return { ...state, lobbyId: action.payload };
-    case 'SET_LOBBY_NAME':
-      return { ...state, lobbyName: action.payload || '' };
-    case 'SET_PHASE':
-      console.log('Updating game phase from', state.gamePhase, 'to', action.payload);
-      return { ...state, gamePhase: action.payload };
-    case 'SET_GAME_STATE': {
-      const lobby = action.payload?.lobby || action.payload;
-      const players = lobby?.connectedPlayers;
-
-      console.log('Game state update received:', lobby);
-
-      // Only update if we have a valid players array
-      if (Array.isArray(players)) {
-        return {
-          ...state,
-          connectedPlayers: players,
-        };
-      }
-      return state;
-    }
-    case 'SET_CURRENT_PLAYER':
-      return { ...state, currentPlayer: action.payload };
-    case 'SET_CONNECTED_PLAYERS':
-      console.log('REDUCER: Set connected players', action.payload);
-      return { ...state, connectedPlayers: [...action.payload] }; // new array ref
-    case 'PLAYER_JOINED': {
-      console.log('REDUCER: Player joined action received', action.payload);
-
-      // Create a new player object
-      const newPlayer = action.payload;
-
-      // Only add if not already present (avoid duplicates)
-      const alreadyExists = state.connectedPlayers.some(
-        p => p.id === newPlayer.id || p.name === newPlayer.name
-      );
-
-      return {
-        ...state,
-        connectedPlayers: alreadyExists
-          ? [...state.connectedPlayers]  // copy array even if no change
-          : [...state.connectedPlayers, newPlayer]  // add the new player
-      };
-    }
-    case 'PLAYER_LEFT': {
-      const name = action.payload?.playerName;
-      if (!name) return state;
-      return {
-        ...state,
-        connectedPlayers: state.connectedPlayers.filter(p => p.name !== name)
-      };
-    }
-
+    case 'SET_LOBBY':
+      return { ...state, lobby: action.payload };
+    // case 'SET_CURRENT_PLAYER':
+    //   return { ...state, currentPlayer: action.payload };
     case 'SET_AVAILABLE_LOBBIES':
-      return {
-        ...state,
-        availableLobbies: Array.isArray(action.payload) ? action.payload : []
-      };
-
+      return { ...state, availableLobbies: Array.isArray(action.payload) ? action.payload : [] };
     case 'CLEAR_LOBBY':
       return { ...initialState };
-    case 'SET_IS_HOST':
-      return { ...state, isHost: action.payload };
-
     default:
       return state;
   }
@@ -101,49 +40,27 @@ function gameReducer(state, action) {
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-  //Connection SignalR
   useEffect(() => {
     if (!state.lobbyId || !state.playerName) return;
 
-    const onPlayersUpdated = (players) => {
-      console.log(`[${state.playerName}] EVENT: Players updated:`, players);
-      dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: players || [] });
-    };
-    const onPlayerJoined = (payload) => {
-      console.log(`[${state.playerName}] EVENT: Player joined:`, payload);
-      dispatch({ type: 'PLAYER_JOINED', payload });
-    };
-    const onPlayerLeft = (payload) => {
-      console.log(`[${state.playerName}] EVENT: Player left:`, payload);
-      dispatch({ type: 'PLAYER_LEFT', payload });
-    };
-    const onGameState = (gs) => {
-      dispatch({ type: 'SET_GAME_STATE', payload: gs });
-    };
-    const onGameStarted = (gameData) => {
-      console.log(`[${state.playerName}] EVENT: Game started with data:`, gameData);
-      dispatch({ type: 'SET_PHASE', payload: 'bidding' });
-      if (gameData) {
-        dispatch({ type: 'SET_GAME_STATE', payload: gameData });
-      }
+    const onLobbyStateUpdated = (lobbyData) => {
+      console.log(`EVENT: Lobby state updated`, lobbyData);
+      dispatch({ type: 'SET_LOBBY', payload: lobbyData });
     };
 
-    signalRService.on('PlayersUpdated', onPlayersUpdated);
-    signalRService.on('PlayerJoined', onPlayerJoined);
-    signalRService.on('PlayerLeft', onPlayerLeft);
-    signalRService.on('GameStarted', onGameStarted);
-    signalRService.on('GameStateUpdated', onGameState);
+    signalRService.on('PlayersUpdated', onLobbyStateUpdated);
+    signalRService.on('GameStarted', onLobbyStateUpdated);
+    signalRService.on('GameStateUpdated', onLobbyStateUpdated);
+    signalRService.on('PlayerJoined', onLobbyStateUpdated);
+    signalRService.on('PlayerLeft', onLobbyStateUpdated);
 
     async function connectToHub() {
       try {
-
         dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' });
-        await signalRService.connect(state.lobbyId, state.playerName);
+        await signalRService.connect(state.lobby.id, state.playerName);
         dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
-
       } catch (error) {
         console.error('SignalR connect failed:', error);
-        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
         dispatch({ type: 'SET_ERROR', payload: error.message });
       }
     }
@@ -151,170 +68,88 @@ export function GameProvider({ children }) {
     connectToHub();
 
     return () => {
-      // Cleanup handlers
-      signalRService.off('PlayersUpdated', onPlayersUpdated);
-      signalRService.off('PlayerJoined', onPlayerJoined);
-      signalRService.off('PlayerLeft', onPlayerLeft);
-      signalRService.off('GameStarted', onGameStarted);
+      signalRService.off('PlayersUpdated', onLobbyStateUpdated);
+      signalRService.off('GameStarted', onLobbyStateUpdated);
+      signalRService.off('GameStateUpdated', onLobbyStateUpdated);
+      signalRService.off('PlayerJoined', onLobbyStateUpdated);
+      signalRService.off('PlayerLeft', onLobbyStateUpdated);
       signalRService.disconnect();
-      dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'disconnected' });
     };
-  }, [state.lobbyId, state.playerName, state.dispatch]);
+  }, [state.lobby?.id, state.playerName]);
 
-  const fetchInitialState = async (lobbyId) => {
-    try {
-      const gs = await apiService.getLobbyState(lobbyId);
-      if (gs) dispatch({ type: 'SET_GAME_STATE', payload: gs });
-    } catch { /* silent */ }
-  };
-
+  // --- REFACTORED ACTION FUNCTIONS ---
   const createLobby = async (playerName, lobbyName) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      dispatch({ type: 'SET_ERROR', payload: null });
-
       const { lobby } = await apiService.createLobby(playerName, lobbyName);
-      if (!lobby) throw new Error('Lobby creation failed');
-
-      dispatch({ type: 'SET_LOBBY_ID', payload: lobby.id });
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
-      dispatch({ type: 'SET_LOBBY_NAME', payload: lobby.name || lobbyName || `Lobby ${lobby.id}` });
-      dispatch({ type: 'SET_IS_HOST', payload: true });
-      if (lobby.connectedPlayers) {
-        dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: lobby.connectedPlayers });
-      }
-
-      await fetchInitialState(lobby.id);
+      dispatch({ type: 'SET_LOBBY', payload: lobby });
       dispatch({ type: 'SET_LOADING', payload: false });
       return lobby;
     } catch (e) {
       dispatch({ type: 'SET_ERROR', payload: e.message });
-      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
-  const joinLobby = async (playerName, lobbyId) => {
+  const joinLobby = async (playerName, selectedLobbyId) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      dispatch({ type: 'SET_ERROR', payload: null });
-
-      if (!state.availableLobbies.length) {
-        const list = await apiService.getAvailableLobbies();
-        dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
-      }
-
-      const { lobby, errorMessage } = await apiService.joinLobby(playerName, lobbyId);
+      const { lobby, errorMessage } = await apiService.joinLobby(playerName, selectedLobbyId);
       if (errorMessage) throw new Error(errorMessage);
-
-      dispatch({ type: 'SET_LOBBY_ID', payload: lobbyId });
-      dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
-      dispatch({ type: 'SET_LOBBY_NAME', payload: lobby?.name });
-
-      if (lobby?.connectedPlayers) {
-        dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: lobby.connectedPlayers });
-      }
-
-      try {
-        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connecting' });
-
-        // Connect to SignalR and ensure it's fully ready
-        await signalRService.connect(lobbyId, playerName);
-        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'connected' });
-
-        await signalRService.invoke('JoinLobby', lobbyId, playerName);
-
-      } catch (connError) {
-        console.error('SignalR connection/join failed:', connError);
-        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
-        dispatch({ type: 'SET_ERROR', payload: `SignalR error: ${connError.message}` });
-      }
-
-      // Complete the process
-      await fetchInitialState(lobbyId);
+      dispatch({ type: 'SET_LOBBY', payload: lobby });
       dispatch({ type: 'SET_LOADING', payload: false });
       return lobby;
     } catch (e) {
-      console.error('Join lobby failed:', e);
       dispatch({ type: 'SET_ERROR', payload: e.message });
-      dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
 
-  const leaveLobby = async (playerName, lobbyId) => {
+  const leaveLobby = async () => {
+    if (!state.lobby?.id) return;
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      dispatch({ type: 'SET_ERROR', payload: null });
-
-      const { success } = await apiService.leaveLobby(playerName, lobbyId);
-      if (!success) throw new Error('Failed to leave lobby');
-
-      const { lobby } = await apiService.getLobbyState(lobbyId);
-      if (!lobby) throw new Error('Lobby not found');
-
-      if (lobby?.connectedPlayers) {
-        dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: lobby.connectedPlayers });
-      }
-
-      try {
-        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'disconnecting' });
-        await signalRService.invoke('LeaveLobby', lobbyId, playerName);
-        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'disconnected' });
-
-      } catch (connError) {
-        console.error('SignalR connection/leave failed:', connError);
-        dispatch({ type: 'SET_CONNECTION_STATUS', payload: 'error' });
-        dispatch({ type: 'SET_ERROR', payload: `SignalR error: ${connError.message}` });
-      }
-
-      await fetchInitialState(lobbyId);
-      // if (!isHosterHere) {
-      //   dispatch({ type: 'CLEAR_LOBBY' });
-      // }
-
+      await apiService.leaveLobby(state.playerName, state.lobby.id);
+      //dispatch({ type: 'CLEAR_LOBBY' });
       dispatch({ type: 'SET_LOADING', payload: false });
-      return lobby;
     } catch (e) {
       dispatch({ type: 'SET_ERROR', payload: e.message });
-      dispatch({ type: 'SET_LOADING', payload: false });
-      return false;
     }
   };
 
   const getAvailableLobbies = async () => {
     const list = await apiService.getAvailableLobbies();
     dispatch({ type: 'SET_AVAILABLE_LOBBIES', payload: list || [] });
-    return list;
   };
 
   const startGame = async () => {
-    if (!state.lobbyId) return;
+    if (!state.lobby?.id) return;
     try {
-      dispatch({ type: 'SET_PHASE', payload: 'bidding' });
-      await apiService.startGame(state.lobbyId);
-      console.log('Game started successfully');
+      await apiService.startGame(state.lobby.id);
     } catch (e) {
-      // Revert on error
-      dispatch({ type: 'SET_PHASE', payload: 'waiting' });
       dispatch({ type: 'SET_ERROR', payload: e.message });
     }
   };
 
-
-  const startingVariables = {
+  // --- REFACTORED CONTEXT VALUE WITH isHost ---
+  const value = {
     ...state,
-    connectedPlayers: state.connectedPlayers,
-    playersCount: state.connectedPlayers.length,
-    gamePhase: state.gamePhase,
+    lobbyId: state.lobby?.id,
+    lobbyName: state.lobby?.name,
+    connectedPlayers: state.lobby?.connectedPlayers || [],
+    gamePhase: state.lobby?.phase || 'waiting',
+    isHost: state.lobby?.connectedPlayers.some(player => player.isHost === true),
+
+    // Functions
     createLobby,
     joinLobby,
     leaveLobby,
     startGame,
     getAvailableLobbies,
-    dispatch
+    dispatch,
   };
 
   return (
-    <GameContext.Provider value={startingVariables}>
+    <GameContext.Provider value={value}>
       {children}
     </GameContext.Provider>
   );

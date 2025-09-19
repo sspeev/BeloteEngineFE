@@ -110,12 +110,6 @@ class ApiService {
             method: 'GET'
         });
     }
-
-    async getLobbyInfo(lobbyId) {
-        return this.request(`/Lobby/${lobbyId}/info`, {
-            method: 'GET'
-        });
-    }
 }
 
 export default new ApiService();

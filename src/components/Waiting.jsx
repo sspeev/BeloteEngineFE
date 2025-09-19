@@ -6,24 +6,24 @@ const Waiting = ({ setView }) => {
         leaveLobby,
         startGame,
         gamephase,
-        lobbyId,
         lobbyName,
-        playerName,
         isHost,
         connectedPlayers
     } = useGame();
 
     const handleLeaveLobby = async () => {
-        if (playerName.trim()) {
-            const result = await leaveLobby(playerName.trim(), lobbyId);
-            if (result) {
-                setView("main");
-            }
+        const result = await leaveLobby();
+        if (result) {
+            setView("main");
         }
+
     };
 
-    const handleStartGame = () => {
-        startGame(lobbyName);
+    const handleStartGame = async () => {
+        const result = await startGame();
+        if (result) {
+            setView("playing");
+        }
     }
 
     return (
@@ -39,9 +39,9 @@ const Waiting = ({ setView }) => {
                             <p>Leave</p>
                         </button>
                         {isHost && (
-                            <button className="w-25 disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed" 
-                            onClick={() => { handleStartGame(); setView("playing"); }}
-                            disabled={connectedPlayers.length < 4}>
+                            <button className="w-25 disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() => { handleStartGame(); setView("playing"); }}
+                                disabled={connectedPlayers.length < 4}>
                                 <p className="text-contrast">Start</p>
                             </button>
                         )}
