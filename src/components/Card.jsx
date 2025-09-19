@@ -3,14 +3,14 @@ import React from 'react';
 function Card({ suit, value, /*onClick*/ }) {
 
   const cardSkinFont = "SF_Compact_Rounded";
-  const cardImage = `${value}_${suit}.png`;
+  const cardImage = `${value}${suit}.png`;
 
   const getSuitSymbol = (suit) => {
     const symbols = {
-      'Hearts': '♥',
-      'Diamonds': '♦',
-      'Spades': '♠',
-      'Clubs': '♣',
+      'H': '♥',
+      'D': '♦',
+      'S': '♠',
+      'C': '♣',
     };
     return symbols[suit] || suit;
   };
