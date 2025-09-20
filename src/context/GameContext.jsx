@@ -46,16 +46,30 @@ export function GameProvider({ children }) {
   useEffect(() => {
     if (!state.lobbyId || !state.playerName) return;
 
-    const onLobbyStateUpdated = (lobbyData) => {
-      console.log(`EVENT: Lobby state updated`, lobbyData);
-      dispatch({ type: 'SET_LOBBY', payload: lobbyData });
+    const onLobbyStateUpdated = (payload) => {
+      dispatch({ type: 'SET_CONNECTED_PLAYERS', payload: payload.connectedPlayers });
+    };
+    const onPlayerJoined = (payload) => {
+      console.log(`EVENT: Player joined:`, payload);
+      dispatch({ type: 'PLAYER_JOINED', payload });
+    };
+    const onPlayerLeft = (payload) => {
+      console.log(`EVENT: Player left:`, payload);
+      dispatch({ type: 'PLAYER_LEFT', payload });
+    };
+    const onGameStarted = (payload) => {
+      console.log(`EVENT: Game started with data:`, payload);
+      dispatch({ type: 'SET_PHASE', payload: 'bidding' });
+      if (payload) {
+        dispatch({ type: 'SET_GAME_STATE', payload });
+      }
     };
 
-    signalRService.on('PlayersUpdated', onLobbyStateUpdated);
-    signalRService.on('GameStarted', onLobbyStateUpdated);
+    signalRService.on('PlayersUpdated', onLobbyStateUpdated);//To address connected players
+    signalRService.on('GameStarted', onGameStarted);
     signalRService.on('GameStateUpdated', onLobbyStateUpdated);
-    signalRService.on('PlayerJoined', onLobbyStateUpdated);
-    signalRService.on('PlayerLeft', onLobbyStateUpdated);
+    signalRService.on('PlayerJoined', onPlayerJoined);
+    signalRService.on('PlayerLeft', onPlayerLeft);
 
     async function connectToHub() {
       try {
