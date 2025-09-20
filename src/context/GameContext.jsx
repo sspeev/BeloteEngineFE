@@ -11,7 +11,8 @@ const initialState = {
   availableLobbies: [],
   loading: false,
   error: null,
-  connectionStatus: 'disconnected'
+  connectionStatus: 'disconnected',
+  isHost: false
 };
 
 function gameReducer(state, action) {
@@ -30,6 +31,8 @@ function gameReducer(state, action) {
     //   return { ...state, currentPlayer: action.payload };
     case 'SET_AVAILABLE_LOBBIES':
       return { ...state, availableLobbies: Array.isArray(action.payload) ? action.payload : [] };
+    case 'SET_IS_HOST':
+      return { ...state, isHost: action.payload };
     case 'CLEAR_LOBBY':
       return { ...initialState };
     default:
@@ -85,6 +88,7 @@ export function GameProvider({ children }) {
       dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
       dispatch({ type: 'SET_LOBBY', payload: lobby });
       dispatch({ type: 'SET_LOADING', payload: false });
+      dispatch({ type: 'SET_IS_HOST', payload: true });
       return lobby;
     } catch (e) {
       dispatch({ type: 'SET_ERROR', payload: e.message });
@@ -97,6 +101,7 @@ export function GameProvider({ children }) {
       const { lobby, errorMessage } = await apiService.joinLobby(playerName, selectedLobbyId);
       if (errorMessage) throw new Error(errorMessage);
       dispatch({ type: 'SET_LOBBY', payload: lobby });
+      dispatch({ type: 'SET_PLAYER_NAME', payload: playerName });
       dispatch({ type: 'SET_LOADING', payload: false });
       return lobby;
     } catch (e) {
@@ -130,14 +135,15 @@ export function GameProvider({ children }) {
     }
   };
 
-  // --- REFACTORED CONTEXT VALUE WITH isHost ---
   const value = {
     ...state,
     lobbyId: state.lobby?.id,
     lobbyName: state.lobby?.name,
     connectedPlayers: state.lobby?.connectedPlayers || [],
     gamePhase: state.lobby?.phase || 'waiting',
-    isHost: state.lobby?.connectedPlayers.some(player => player.isHost === true),
+    playerName: state.playerName,
+    currentPlayer: state.lobby?.currentPlayer || null,
+    isHost: state.isHost,
 
     // Functions
     createLobby,
