@@ -3,15 +3,15 @@ import { useEffect } from 'react';
 
 function PlayerList() {
   const {
-    connectedPlayers,
+    lobby,
     playerName,
     currentPlayer
   } = useGame();
 
   // Debug connected players changes
   useEffect(() => {
-    console.log('Connected players updated:', connectedPlayers);
-  }, [connectedPlayers]);
+    console.log('Connected players updated:', lobby.connectedPlayers);
+  }, [lobby.connectedPlayers]);
 
   const getPlayerStatus = (player) => {
     if (player.id === currentPlayer) return 'current-turn';
@@ -22,12 +22,12 @@ function PlayerList() {
   return (
     <div className="bg-black/80 rounded-xl p-6 text-white mx-auto">
       <section className="text-center mb-6 border-b border-white/20 pb-4">
-        <h3 className="text-xl font-bold">Players ({connectedPlayers?.length || 0}/4)</h3>
+        <h3 className="text-xl font-bold">Players ({lobby.connectedPlayers?.length || 0}/4)</h3>
       </section>
 
       <div className="flex flex-row flex-wrap gap-3 justify-center">
         {Array.from({ length: 4 }).map((_, index) => {
-          const player = connectedPlayers[index];
+          const player = lobby.connectedPlayers[index];
 
           if (player) {
             return (
