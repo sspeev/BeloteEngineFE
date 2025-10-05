@@ -124,14 +124,18 @@ export function GameProvider({ children }) {
 
   const startGame = async () => {
     if (!state.lobby?.id) return;
-    await apiService.startGame(state.lobby.id);
-    dispatch({ type: 'SET_PHASE', payload: "playing" });
+    try {
+      const { lobby } = await apiService.startGame(state.lobby.id);
+      dispatch({ type: 'SET_LOBBY', payload: lobby });
+    } catch (e) {
+      dispatch({ type: 'SET_ERROR', payload: e.message });
+    }
   };
 
   const value = {
     ...state,
     connectedPlayers: state.lobby?.connectedPlayers || [],
-    gamePhase: state.lobby?.phase || 'waiting',
+    gamePhase: state.lobby?.phase,
     createLobby,
     joinLobby,
     leaveLobby,

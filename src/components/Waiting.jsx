@@ -1,46 +1,37 @@
 import { useGame } from "../context/gameContext";
 import PlayerList from "./PlayerList";
 
-const Waiting = ({ setView }) => {
-    const {
-        leaveLobby,
-        startGame,
-        gamePhase,
-        lobby,
-        isHost
-    } = useGame();
+const Waiting = () => {
+    const { leaveLobby, startGame, gamePhase, lobby, isHost, connectedPlayers } = useGame();
 
     const handleLeaveLobby = async () => {
-        const result = await leaveLobby();
-        if (result) {
-            setView("main");
-        }
-
+        await leaveLobby();
+        // UI will return to pre-lobby automatically because lobby becomes null.
     };
 
     const handleStartGame = async () => {
-        const game = await startGame();
-        if (game) {
-            setView("playing");
-        }
-    }
+        await startGame();
+        // Board will appear automatically when server broadcasts updated phase.
+    };
 
     return (
         <main className="container mx-auto py-8 px-4 flex flex-col items-center">
             <header className="w-full max-w-xs lg:max-w-3xl flex flex-col lg:flex-row justify-between items-center bg-gradient-to-b from-secondary-light to-secondary-dark rounded-xl p-8 mb-10">
                 <div className="flex flex-col lg:flex-row gap-3 items-center mb-6 lg:mb-0">
                     <div className="flex flex-col items-center justify-center">
-                        <h2 className="text-4xl font-semibold font-default text-dirty-white">{lobby.name}</h2>
-                        <p className="text-white text-xl font-semibold font-default">{gamePhase}</p>
+                        <h2 className="text-4xl font-semibold font-default text-dirty-white">{lobby?.name}</h2>
+                        <p className="text-white text-xl font-semibold font-default capitalize">{gamePhase}</p>
                     </div>
                     <div className="button-wrapper">
-                        <button onClick={() => { handleLeaveLobby(); setView("main"); }} className="w-25">
+                        <button onClick={handleLeaveLobby} className="w-25">
                             <p>Leave</p>
                         </button>
                         {isHost && (
-                            <button className="w-25 disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                                onClick={() => { handleStartGame(); setView("playing"); }}
-                                disabled={lobby.connectedPlayers.length < 4}>
+                            <button
+                                className="w-25 disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={handleStartGame}
+                                disabled={connectedPlayers.length < 4}
+                            >
                                 <p className="text-contrast">Start</p>
                             </button>
                         )}
@@ -52,11 +43,11 @@ const Waiting = ({ setView }) => {
                 </div>
             </header>
             <PlayerList />
-            <section>
-                If the host player leaves, the other players will be returned to the main menu.
+            <section className="text-sm text-white/70 mt-6">
+                If the host leaves, the lobby closes.
             </section>
         </main>
     );
-}
+};
 
 export default Waiting;

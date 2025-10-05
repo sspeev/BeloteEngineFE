@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useGame } from '../context/gameContext';
 import Welcome from './Welcome';
 import CreateForm from './CreateForm';
 import JoinForm from './JoinForm';
@@ -6,14 +7,21 @@ import Waiting from './Waiting';
 import Board from './Board';
 
 const GameLobby = () => {
+  const { lobby, gamePhase } = useGame();
 
+  // Local view ONLY for pre-lobby navigation
   const [playerName, setPlayerName] = useState('');
   const [lobbyName, setLobbyName] = useState('');
   const [selectedLobbyId, setSelectedLobbyId] = useState('');
   const [view, setView] = useState('main');
 
-  return (
+  // Once we have a lobby from context, ignore local view for post-lobby states
+  if (lobby) {
+    if (gamePhase === 'waiting') return <Waiting />;
+    return <Board />;
+  }
 
+  return (
     <div className="lobby-container no-scrollbar relative overflow-x-hidden">
       {view === 'main' && (
         <Welcome setView={setView} />
@@ -39,18 +47,10 @@ const GameLobby = () => {
         />
       )}
 
-      {view === 'waiting' && (
-        <Waiting setView={setView} />
-      )}
-
-      {view === 'playing' && (
-        <Board />
-      )}
-
       <div className="hearts text-[200px] lg:text-[500px] rotate-[25deg] bottom-1/5 -left-1 absolute bg-gradient-to-b from-primary-dark to-primary-light bg-clip-text text-transparent origin-top-left ">♥</div>
       <div className="spades text-[200px] lg:text-[500px] -rotate-[25deg] top-1/12 right-1 absolute origin-top-left bg-gradient-to-l from-secondary-dark to-secondary-light bg-clip-text text-transparent">♣</div>
     </div>
   );
-}
+};
 
 export default GameLobby;
