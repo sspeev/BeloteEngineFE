@@ -43,13 +43,24 @@ export function GameProvider({ children }) {
   useEffect(() => {
     if (!state.lobby?.id || !state.playerName) return;
 
-    const onLobbyStateUpdated = (lobbyData) => {
-      console.log(`✅ EVENT RECEIVED: LobbyStateUpdated`, lobbyData);
-      dispatch({ type: 'SET_LOBBY', payload: lobbyData });
+    const onPlayerJoined = (lobby) => {
+      console.log(`✅ EVENT RECEIVED: PlayerJoined`, lobby);
+      dispatch({ type: 'SET_LOBBY', payload: lobby });
     };
 
-    // Listen for the single, authoritative event from the backend.
-    signalRService.on('LobbyStateUpdated', onLobbyStateUpdated);
+    const onPlayerLeft = (lobby) => {
+      console.log(`✅ EVENT RECEIVED: PlayerLeft`, lobby);
+      dispatch({ type: 'SET_LOBBY', payload: lobby });
+    }
+    const onStartGame = (lobby) => {
+      console.log(`✅ EVENT RECEIVED: StartGame`, lobby);
+      dispatch({ type: 'SET_LOBBY', payload: lobby });
+    };
+
+    // Listen for authoritative event from the backend.
+    signalRService.on('PlayerJoined', onPlayerJoined);
+    signalRService.on('PlayerLeft', onPlayerLeft);
+    signalRService.on('StartGame', onStartGame);
 
     async function connectToHub() {
       try {
@@ -64,7 +75,9 @@ export function GameProvider({ children }) {
     connectToHub();
 
     return () => {
-      signalRService.off('LobbyStateUpdated', onLobbyStateUpdated);
+      signalRService.off('PlayerJoined', onPlayerJoined);
+      signalRService.off('PlayerLeft', onPlayerLeft);
+      signalRService.off('StartGame', onStartGame);
       signalRService.disconnect();
     };
   }, [state.lobby?.id, state.playerName]);
@@ -111,8 +124,8 @@ export function GameProvider({ children }) {
 
   const startGame = async () => {
     if (!state.lobby?.id) return;
-    // Just call the API. The UI will update when the SignalR event is received.
     await apiService.startGame(state.lobby.id);
+    dispatch({ type: 'SET_PHASE', payload: "playing" });
   };
 
   const value = {

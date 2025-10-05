@@ -1,14 +1,13 @@
-import { useGame } from "../context/GameContext";
+import { useGame } from "../context/gameContext";
 import PlayerList from "./PlayerList";
 
 const Waiting = ({ setView }) => {
     const {
         leaveLobby,
         startGame,
-        gamephase,
-        lobbyName,
-        isHost,
-        connectedPlayers
+        gamePhase,
+        lobby,
+        isHost
     } = useGame();
 
     const handleLeaveLobby = async () => {
@@ -20,8 +19,8 @@ const Waiting = ({ setView }) => {
     };
 
     const handleStartGame = async () => {
-        const result = await startGame();
-        if (result) {
+        const game = await startGame();
+        if (game) {
             setView("playing");
         }
     }
@@ -31,8 +30,8 @@ const Waiting = ({ setView }) => {
             <header className="w-full max-w-xs lg:max-w-3xl flex flex-col lg:flex-row justify-between items-center bg-gradient-to-b from-secondary-light to-secondary-dark rounded-xl p-8 mb-10">
                 <div className="flex flex-col lg:flex-row gap-3 items-center mb-6 lg:mb-0">
                     <div className="flex flex-col items-center justify-center">
-                        <h2 className="text-4xl font-semibold font-default text-dirty-white">{lobbyName}</h2>
-                        <p className="text-white text-xl font-semibold font-default">{gamephase}</p>
+                        <h2 className="text-4xl font-semibold font-default text-dirty-white">{lobby.name}</h2>
+                        <p className="text-white text-xl font-semibold font-default">{gamePhase}</p>
                     </div>
                     <div className="button-wrapper">
                         <button onClick={() => { handleLeaveLobby(); setView("main"); }} className="w-25">
@@ -41,7 +40,7 @@ const Waiting = ({ setView }) => {
                         {isHost && (
                             <button className="w-25 disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={() => { handleStartGame(); setView("playing"); }}
-                                disabled={connectedPlayers.length < 4}>
+                                disabled={lobby.connectedPlayers.length < 4}>
                                 <p className="text-contrast">Start</p>
                             </button>
                         )}
