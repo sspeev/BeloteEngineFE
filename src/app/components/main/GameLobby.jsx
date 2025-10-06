@@ -1,21 +1,19 @@
 import { useState } from 'react';
-import { useGame } from '../../../context/gameContext';
-import Welcome from './Welcome';
-import CreateForm from './CreateForm';
-import JoinForm from './JoinForm';
-import Waiting from './Waiting';
-import Board from '../in-game/Board';
+import { useGame } from '../../contexts/GameContext.jsx';
+import Welcome from '../main/Welcome.jsx';
+import CreateForm from '../main/CreateForm.jsx';
+import JoinForm from '../main/JoinForm.jsx';
+import Waiting from '../main/Waiting.jsx';
+import Board from '../in-game/Board.jsx';
 
 const GameLobby = () => {
   const { lobby, gamePhase } = useGame();
 
-  // Local view ONLY for pre-lobby navigation
   const [playerName, setPlayerName] = useState('');
   const [lobbyName, setLobbyName] = useState('');
   const [selectedLobbyId, setSelectedLobbyId] = useState('');
   const [view, setView] = useState('main');
 
-  // Once we have a lobby from context, ignore local view for post-lobby states
   if (lobby) {
     if (gamePhase === 'waiting') return <Waiting />;
     return <Board />;

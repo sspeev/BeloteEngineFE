@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useGame } from '../../../context/gameContext.jsx';
+import { useGame } from '../../contexts/GameContext.jsx';
 
 function PlayerList() {
   const { lobby, playerName } = useGame();

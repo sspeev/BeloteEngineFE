@@ -1,5 +1,5 @@
-import BiddingPanel from "./BiddingPanel";
-import Card from "./Card"; // Import your Card component
+import BiddingPanel from "../in-game/BiddingPanel.jsx";
+import Card from "../in-game/Card.jsx";
 
 const Board = () => {
     // Example data for the player's hand

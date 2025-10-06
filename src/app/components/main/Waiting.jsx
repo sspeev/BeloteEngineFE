@@ -1,5 +1,5 @@
-import { useGame } from "../../../context/gameContext";
-import PlayerList from "./PlayerList";
+import { useGame } from "../../contexts/GameContext.jsx";
+import PlayerList from "../main/PlayerList.jsx";
 
 const Waiting = () => {
     const {

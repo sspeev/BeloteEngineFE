@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useGame } from '../context/GameContext';
+import { useState } from 'react';
+import { useGame } from '../../contexts/GameContext.jsx';
 import './BiddingPanel.css';
 
 function BiddingPanel() {

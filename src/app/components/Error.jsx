@@ -1,4 +1,4 @@
-import { useGame } from '../../contexts/GameContext.jsx';
+import { useGame } from '../contexts/GameContext.jsx';
 
 const Error = () => {
 

@@ -1,0 +1,8 @@
+export const SET_LOADING = 'SET_LOADING';
+export const SET_ERROR = 'SET_ERROR';
+export const SET_CONNECTION_STATUS = 'SET_CONNECTION_STATUS';
+export const SET_PLAYER_NAME = 'SET_PLAYER_NAME';
+export const SET_LOBBY = 'SET_LOBBY';
+export const SET_IS_HOST = 'SET_IS_HOST';
+export const SET_AVAILABLE_LOBBIES = 'SET_AVAILABLE_LOBBIES';
+export const CLEAR_STATE = 'CLEAR_STATE';

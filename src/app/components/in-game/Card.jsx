@@ -1,5 +1,3 @@
-import React from 'react';
-
 function Card({ suit, value, /*onClick*/ }) {
 
   const cardSkinFont = "SF_Compact_Rounded";

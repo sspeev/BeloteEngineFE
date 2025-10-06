@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useGame } from "../../../context/gameContext";
+import { useGame } from "../../contexts/GameContext.jsx";
 
 const JoinForm = ({
     playerName,
