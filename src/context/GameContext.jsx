@@ -135,7 +135,7 @@ export function GameProvider({ children }) {
   const value = {
     ...state,
     connectedPlayers: state.lobby?.connectedPlayers || [],
-    gamePhase: state.lobby?.phase,
+    gamePhase: state.lobby?.gamePhase,
     createLobby,
     joinLobby,
     leaveLobby,

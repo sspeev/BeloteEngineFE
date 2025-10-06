@@ -2,7 +2,14 @@ import { useGame } from "../context/gameContext";
 import PlayerList from "./PlayerList";
 
 const Waiting = () => {
-    const { leaveLobby, startGame, gamePhase, lobby, isHost, connectedPlayers } = useGame();
+    const { 
+        leaveLobby, 
+        startGame, 
+        gamePhase, 
+        lobby, 
+        isHost, 
+        connectedPlayers
+    } = useGame();
 
     const handleLeaveLobby = async () => {
         await leaveLobby();

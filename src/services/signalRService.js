@@ -8,7 +8,6 @@ class SignalRService {
     }
 
     async connect(lobbyId, playerName) {
-        // Don't try to connect multiple times simultaneously
         if (this.connecting) {
             return new Promise((resolve) => {
                 const checkInterval = setInterval(() => {
@@ -20,26 +19,20 @@ class SignalRService {
             });
         }
 
-        // If already connected to this lobby, just return the connection
         if (this.connection?.state === signalR.HubConnectionState.Connected) {
             console.log('SignalR already connected');
             return this.connection;
         }
 
-        // Clean up any existing connection
         await this.disconnect();
 
         this.connecting = true;
         console.log(`Setting up SignalR for ${playerName} in lobby ${lobbyId}`);
 
         try {
-            // Create a new connection with more resilient settings
             this.connection = new signalR.HubConnectionBuilder()
                 .withUrl(`https://localhost:7132/beloteHub?lobbyId=${encodeURIComponent(lobbyId)}`, {
-                    // Fix 1: Don't skip negotiation - let SignalR decide best transport
-                    // Fix 2: Allow credentials to pass through if needed
                     withCredentials: true,
-                    // Fix 3: Longer timeout for slow connections
                     timeout: 30000
                 })
                 .withAutomaticReconnect([0, 1000, 2000, 5000, 10000, 15000, 30000])
