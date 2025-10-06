@@ -1,5 +1,5 @@
 
-import { useGame } from '../context/gameContext';
+import { useGame } from '../../../context/gameContext';
 import GameLobby from './GameLobby';
 
 const Game = () => {

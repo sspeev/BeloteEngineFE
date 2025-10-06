@@ -1,13 +1,13 @@
-import { useGame } from "../context/gameContext";
+import { useGame } from "../../../context/gameContext";
 import PlayerList from "./PlayerList";
 
 const Waiting = () => {
-    const { 
-        leaveLobby, 
-        startGame, 
-        gamePhase, 
-        lobby, 
-        isHost, 
+    const {
+        leaveLobby,
+        startGame,
+        gamePhase,
+        lobby,
+        isHost,
         connectedPlayers
     } = useGame();
 

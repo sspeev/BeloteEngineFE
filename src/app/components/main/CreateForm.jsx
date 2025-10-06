@@ -1,4 +1,4 @@
-import { useGame } from '../context/gameContext';
+import { useGame } from '../../contexts/GameContext.jsx';
 
 export default function CreateForm({
     playerName,

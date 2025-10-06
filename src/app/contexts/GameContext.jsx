@@ -1,6 +1,6 @@
-import React, { createContext, useReducer, useContext, useEffect } from 'react';
-import apiService from '../services/api';
-import signalRService from '../services/signalRService';
+import { createContext, useReducer, useContext, useEffect } from 'react';
+import apiService from '../../services/api.js';
+import signalRService from '../../services/signalRService.js';
 
 const GameContext = createContext(null);
 

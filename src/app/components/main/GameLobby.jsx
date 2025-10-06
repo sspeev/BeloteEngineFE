@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useGame } from '../context/gameContext';
+import { useGame } from '../../../context/gameContext';
 import Welcome from './Welcome';
 import CreateForm from './CreateForm';
 import JoinForm from './JoinForm';
 import Waiting from './Waiting';
-import Board from './Board';
+import Board from '../in-game/Board';
 
 const GameLobby = () => {
   const { lobby, gamePhase } = useGame();

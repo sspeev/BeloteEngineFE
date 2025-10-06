@@ -13,7 +13,7 @@ const Board = () => {
 
     return (
         <div>
-            <BiddingPanel />
+            {/* <BiddingPanel /> */}
             {/* Main board container using CSS Grid */}
             <section className="board w-full min-h-screen p-2 md:p-4 grid grid-cols-[1fr,auto,1fr] grid-rows-[1fr,auto,1fr] gap-2 md:gap-4">
 
