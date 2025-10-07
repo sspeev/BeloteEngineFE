@@ -28,7 +28,7 @@ function PlayerList() {
                 You
               </span>
             )}
-            {player.isHost && (
+            {player.hoster && (
               <span className="inline-block bg-green-500 text-black px-2 py-0.5 text-xs font-bold rounded-full mt-2 ml-2">
                 Host
               </span>

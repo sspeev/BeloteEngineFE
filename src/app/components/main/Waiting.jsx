@@ -13,12 +13,10 @@ const Waiting = () => {
 
     const handleLeaveLobby = async () => {
         await leaveLobby();
-        // UI will return to pre-lobby automatically because lobby becomes null.
     };
 
     const handleStartGame = async () => {
         await startGame();
-        // Board will appear automatically when server broadcasts updated phase.
     };
 
     return (
