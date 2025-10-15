@@ -30,7 +30,7 @@ const Board = () => {
             {/* <BiddingPanel /> */}
             {/* Main board container using CSS Grid */}
             <section className="board flex flex-row justify-center">
-                <article className="westHand h-min flex">
+                <article className="westHand h-screen flex items-center">
                     {/* WEST PLAYER (Opponent 'N') */}
                     <div className="flex flex-col space-y-[-60px] md:space-y-[-75px] lg:space-y-[-90px]">
                         <Card faceUp={false} extraStyles="transform rotate-90" />
@@ -40,12 +40,12 @@ const Board = () => {
                         <Card faceUp={false} extraStyles="transform rotate-90" />
                     </div>
                 </article>
-                <article className="westInitial">
+                <article className="westInitial flex items-center">
                     <InitialSign playerName={opponentTeam[1].name} />
                 </article>
                 <article className="w-full">
                     {/* NORTH PLAYER (Partner 'D') */}
-                    <div className="flex flex-col items-center justify-end">
+                    <div className="flex flex-row items-center justify-center">
                         <div className="northHand flex justify-center space-x-[-30px] md:space-x-[-40px] lg:space-x-[-50px] mb-2">
                             <Card faceUp={false} />
                             <Card faceUp={false} />
@@ -66,7 +66,7 @@ const Board = () => {
                     {/* SOUTH PLAYER (You) */}
                     {lobby.connectedPlayers.map(player => (
                         player.name === playerName && (
-                            <div className="flex flex-col items-center justify-start" >
+                            <div className="flex flex-row items-center justify-start" >
                                 <InitialSign playerName={me.name} />
                                 <div className="flex justify-center space-x-[-20px] md:space-x-[-30px]">
                                     {playerHand.map((card) => (
@@ -81,10 +81,10 @@ const Board = () => {
                         )
                     ))}
                 </article>
-                <article className="northInitial">
+                <article className="northInitial flex items-center text-start">
                     <InitialSign playerName={teammate.name} />
                 </article>
-                <article className="flex align-center">
+                <article className="flex h-screen items-center">
                     {/* EAST PLAYER */}
                     <div className="flex flex-col space-y-[-60px] md:space-y-[-75px] lg:space-y-[-90px]">
                         <Card faceUp={false} extraStyles="transform -rotate-90" />
