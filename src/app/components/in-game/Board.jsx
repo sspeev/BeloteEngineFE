@@ -43,9 +43,9 @@ const Board = () => {
                 <article className="westInitial flex items-center">
                     <InitialSign playerName={opponentTeam[1].name} />
                 </article>
-                <article className="w-full">
-                    {/* NORTH PLAYER (Partner 'D') */}
-                    <div className="flex flex-row items-center justify-center">
+                <article className="w-3xs lg:w-3xl flex flex-col items-center justify-between py-4 space-y-4">
+                    {/* NORTH PLAYER */}
+                    <div className="flex flex-col lg:flex-row items-center justify-center">
                         <div className="northHand flex justify-center space-x-[-30px] md:space-x-[-40px] lg:space-x-[-50px] mb-2">
                             <Card faceUp={false} />
                             <Card faceUp={false} />
@@ -58,15 +58,15 @@ const Board = () => {
 
 
                     {/* CENTER TABLE */}
-                    <div className=" bg-secondary-dark rounded-xl md:rounded-3xl flex items-center justify-center shadow-inner min-w-[200px] md:min-w-[300px] lg:min-w-[400px] h-60">
-                        <p className="text-green-400/50 text-lg md:text-xl lg:text-2xl">Table Center</p>
+                    <div className=" bg-secondary-dark rounded-xl md:rounded-3xl flex items-center justify-center shadow-inner w-64 lg:w-full h-full">
+                        <p className="text-green-400/50 text-lg md:text-xl lg:text-2xl">0 - 0</p>
                     </div>
 
 
                     {/* SOUTH PLAYER (You) */}
                     {lobby.connectedPlayers.map(player => (
                         player.name === playerName && (
-                            <div className="flex flex-row items-center justify-start" >
+                            <div className="flex flex-col lg:flex-row items-center justify-center" >
                                 <InitialSign playerName={me.name} />
                                 <div className="flex justify-center space-x-[-20px] md:space-x-[-30px]">
                                     {playerHand.map((card) => (

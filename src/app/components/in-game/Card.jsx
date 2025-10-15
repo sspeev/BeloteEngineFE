@@ -15,7 +15,7 @@ function Card({ suit, value, faceUp, extraStyles = "" }) {
 
   return (
     <>
-      <div className={`w-card h-card flex flex-row justify-between bg-white rounded-sm shadow-default ${extraStyles}`}>
+      <div className={`w-lg-card h-lg-card flex flex-row justify-between bg-white rounded-sm shadow-default ${extraStyles}`}>
         <div className="upper-wrapper items-center h-full flex flex-col m-1">
           <div className={`upper-value text-${suitColor} text-sm font-['${cardSkinFont}']`}>{value}</div>
           <i className={`uppder-suit text-sm text-${suitColor}`}>{symbols[suit]}</i>

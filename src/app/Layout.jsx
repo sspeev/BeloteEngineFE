@@ -9,12 +9,17 @@ const Layout = () => {
     if (error) return <Error />;
 
     return (
+        <div className="App flex flex-col w-full min-h-screen justify-between bg-gradient-to-l from-primary-dark to-primary-light">
+            <h3 className="inline-block w-min h-min whitespace-nowrap text-left text-white text-lg font-semibold font-default">
+                ALFA 0.0.7
+            </h3>
 
-        <div className="App h-full bg-gradient-to-l from-primary-dark to-primary-light">
-            <h3 className="text-left justify-start text-white text-xl font-semibold font-default leading-[45px]">ALFA 0.0.7</h3>
-            <GameLobby />
-            <footer>
-                <p className="text-center justify-start text-white text-sm font-semibold font-default">&copy; Stoyan Peev 2025</p>
+            <main>
+                <GameLobby />
+            </main>
+
+            <footer className="text-center text-white text-sm font-semibold font-default">
+                &copy; Stoyan Peev 2025
             </footer>
         </div>
     );

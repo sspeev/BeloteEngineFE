@@ -16,7 +16,7 @@ function PlayerList() {
         <h3 className="text-xl font-bold">Players ({players.length}/4)</h3>
       </section>
 
-      <div className="flex flex-row flex-wrap gap-3 justify-center">
+      <div className="flex flex-col md:flex-row lg:flex-row flex-wrap gap-3 justify-center">
         {players.map((player) => (
           <section
             key={player.id || player.name}
