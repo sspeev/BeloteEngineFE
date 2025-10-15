@@ -10,6 +10,9 @@
     --color-dirty-white: #d9d9d9;
     --color-contrast: var(--color-yellow-400);
 
+    --width-card: 101.5px;
+    --height-card: 144px;
+
     --font-default: 'Poppins', sans-serif;
 
     --shadow-default: 0px 4px 12px 0px rgba(0,0,0,0.20);

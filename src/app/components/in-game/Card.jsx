@@ -22,17 +22,17 @@ function Card({ suit, value, faceUp, extraStyles = "" }) {
 
   return (
     <>
-      <div className={`w-[220px] h-72 flex flex-row bg-white rounded-[10px] shadow-[0px_4px_8px_0px_rgba(157,179,206,1.00)] ${extraStyles}`}>
-        <div className="upper-wrapper items-center w-[1em] h-full flex flex-col m-1">
-          <div className={`upper-value text-${getSuitColor(suit)} text-4xl font-['${cardSkinFont}']`}>{value}</div>
-          <div className={`upper-suit text-${getSuitColor(suit)} text-4xl font-['${cardSkinFont}']`}>{getSuitSymbol(suit)}</div>
+      <div className={`w-card h-card flex flex-row justify-between bg-white rounded-sm shadow-default ${extraStyles}`}>
+        <div className="upper-wrapper items-center h-full flex flex-col m-1">
+          <div className={`upper-value text-${getSuitColor(suit)} text-sm font-['${cardSkinFont}']`}>{value}</div>
+          <div className={`upper-suit text-${getSuitColor(suit)} text-sm`}>{getSuitSymbol(suit)}</div>
         </div>
 
-        <img className="w-sm h-auto mt-5 mb-5 ml-2 mr-2 outline-[2px] outline-black" src={cardImage} />
+        <img className="w-[80px] h-auto mt-4 mb-4 outline-[1px] outline-black rounded-sm" src={cardImage} />
 
-        <div className="lower-wrapper items-center w-[1em] h-full flex flex-col m-1 -rotate-180">
-          <div className={`lower-value text-${getSuitColor(suit)} text-4xl font-['${cardSkinFont}']`}>{value}</div>
-          <div className={`lower-suit text-${getSuitColor(suit)} text-4xl font-['${cardSkinFont}']`}>{getSuitSymbol(suit)}</div>
+        <div className="lower-wrapper items-center h-full flex flex-col m-1 -rotate-180">
+          <div className={`lower-value text-${getSuitColor(suit)} text-sm font-['${cardSkinFont}']`}>{value}</div>
+          <div className={`lower-suit text-${getSuitColor(suit)} text-sm font-['${cardSkinFont}']`}>{getSuitSymbol(suit)}</div>
         </div>
       </div>
     </>
