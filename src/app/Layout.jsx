@@ -15,6 +15,7 @@ const Layout = () => {
             </h3>
 
             <main>
+                {/* <MainRoutes /> */}
                 <GameLobby />
             </main>
 
